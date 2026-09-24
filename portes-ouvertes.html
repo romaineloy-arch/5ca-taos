@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La veille des portes ouvertes — simulation de secrétariat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F4; --card:#FFFFFF; --ink:#18212B; --muted:#56636F; --line:#CDD5DC;
+  --bar:#16202B; --bar-ink:#F3F5F7; --accent:#E8772E; --accent-ink:#FFFFFF;
+  --ok:#237A4B; --ok-bg:#E3F3E8; --mid:#9A6A00; --mid-bg:#FFF3D6; --err:#B3261E; --err-bg:#FBE6E4;
+  --t-call:#2F6FB0; --t-mail:#7B4FB0; --t-visit:#1F8A70; --t-task:#E8772E; --t-alert:#B3261E;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12181E; --card:#1E2730; --ink:#E6EBEF; --muted:#9AA8B4; --line:#34424E;
+    --bar:#0B1015; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12181E; --card:#1E2730; --ink:#E6EBEF; --muted:#9AA8B4; --line:#34424E;
+  --bar:#0B1015; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 90px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+h1,h2,h3{font-family:"Space Grotesk","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.2;margin:0}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{max-width:860px;margin:0 auto;padding:24px 18px 60px}
+
+/* Barre du haut : horloge + jauges */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar);color:var(--bar-ink);padding:10px 18px}
+.top-in{max-width:860px;margin:0 auto;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.clock{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:34px;letter-spacing:.04em;color:var(--accent)}
+.gauges{display:flex;gap:18px;flex:1;min-width:240px;flex-wrap:wrap}
+.gauge{flex:1;min-width:130px}
+.gauge span{font-size:13px;opacity:.85;display:flex;justify-content:space-between}
+.gauge .track{height:10px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden;margin-top:3px}
+.gauge .fill{height:100%;background:var(--accent);width:50%;transition:width .5s}
+.day{height:4px;background:rgba(255,255,255,.12);margin-top:8px;max-width:860px;margin-left:auto;margin-right:auto}
+.day div{height:100%;background:var(--accent);transition:width .5s}
+
+/* Cartes */
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:24px;margin-top:22px;border-left:6px solid var(--accent)}
+.tag{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.08em;color:#fff;padding:3px 10px;border-radius:3px;margin-bottom:10px}
+.card h2{font-size:26px;margin-bottom:10px}
+.card p{margin:0 0 12px}
+.quote{background:var(--bg);border-left:4px solid var(--line);padding:12px 16px;margin:0 0 16px;border-radius:0 4px 4px 0}
+.quote p{margin:0 0 6px}
+.opts{display:grid;gap:10px;margin:14px 0}
+.opt{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--card);cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:5px;width:18px;height:18px;flex:none}
+.opt.best{border-color:var(--ok);background:var(--ok-bg)}
+.opt.picked-bad{border-color:var(--err)}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;padding:12px 22px;border-radius:5px;font-weight:700;font-size:18px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.fb{margin-top:16px;padding:14px 16px;border-radius:5px}
+.fb.good{background:var(--ok-bg);color:var(--ok)} .fb.mid{background:var(--mid-bg);color:var(--mid)} .fb.bad{background:var(--err-bg);color:var(--err)}
+.fb strong{display:block;font-size:20px;margin-bottom:4px}
+.fb p{margin:4px 0 0;color:var(--ink)}
+.field{display:grid;gap:4px;margin-bottom:14px;max-width:560px}
+.field label{font-weight:700}
+select,input[type=text],input[type=number]{padding:8px 10px;border:2px solid var(--line);border-radius:4px;background:var(--card);max-width:100%}
+.tablewrap{overflow-x:auto;margin:0 0 16px}
+table.t{border-collapse:collapse;font-size:16px;background:var(--card)}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 10px;text-align:center}
+table.t td.l,table.t th.l{text-align:left}
+.busy{background:var(--err-bg);color:var(--err);font-weight:700}
+.total{font-weight:700;font-size:20px;margin-top:8px}
+.mailc{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--bg);font-size:16px}
+.mailc p{margin:0 0 6px}
+
+/* Accueil et fin */
+.hero{background:var(--bar);color:var(--bar-ink);border-radius:6px;padding:30px 28px;border-left:0}
+.hero h1{font-size:36px;margin-bottom:12px}
+.hero p{margin:0 0 12px;max-width:62ch}
+.hero .sign{font-style:italic;opacity:.85}
+.rules-list{margin:10px 0 0;padding-left:22px}
+.rules-list li{margin-bottom:6px}
+.stars{font-size:44px;color:var(--accent);letter-spacing:.1em}
+.recap{width:100%;border-collapse:collapse;font-size:16px;margin-top:10px}
+.recap td{border-bottom:1px solid var(--line);padding:6px 4px}
+.recap td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.check label{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:4px;flex:none}
+.small{font-size:15px;color:var(--muted)}
+.linkbtn{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font-size:15px}
+[hidden]{display:none!important}
+@media (max-width:560px){.clock{font-size:26px}.hero h1{font-size:28px}.card{padding:18px}}
+@media (prefers-reduced-motion:reduce){.gauge .fill,.day div{transition:none}}
+</style>
+</head>
+<body>
+<div class="top" id="top" hidden>
+  <div class="top-in">
+    <div class="clock" id="clock">08:00</div>
+    <div class="gauges">
+      <div class="gauge"><span><b>Clients satisfaits</b><b id="gc">–</b></span><div class="track"><div class="fill" id="fc"></div></div></div>
+      <div class="gauge"><span><b>Confiance de la direction</b><b id="gp">–</b></span><div class="track"><div class="fill" id="fp"></div></div></div>
+    </div>
+  </div>
+  <div class="day"><div id="dayfill" style="width:0"></div></div>
+</div>
+<main id="app"></main>
+
+<p style="max-width:980px;margin:0 auto;padding:0 18px 30px;font-size:16px"><a href="index.html" style="color:inherit;font-weight:700">← Retour à tous les jeux</a></p>
+<script>
+const KEY="journee-portes-ouvertes";
+const TAGS={APPEL:"var(--t-call)","E-MAIL":"var(--t-mail)",VISITEUR:"var(--t-visit)",TÂCHE:"var(--t-task)",ALERTE:"var(--t-alert)"};
+
+/* ---------- Les 15 événements de la journée ---------- */
+const EVENTS=[
+{t:"07:55",tag:"TÂCHE",cat:"p",title:"Le mot de Mme Vandamme",
+ html:`<p>Sur ton bureau, une note. <b>Recopie l'essentiel sur ta feuille : cette note ne réapparaîtra plus.</b></p>
+ <div class="quote">
+ <p>« Demain, ce sont nos portes ouvertes ! Je suis dehors toute la journée pour les préparatifs, M. Lambert est à l'atelier. Voici l'essentiel :</p>
+ <p>• Portes ouvertes : <b>samedi 17 octobre, de 10 h à 16 h</b>.</p>
+ <p>• <b>40 places maximum.</b> Au-delà : liste d'attente, sans exception.</p>
+ <p>• Le traiteur doit être confirmé <b>avant 11 h</b> aujourd'hui, sinon il ne livre pas.</p>
+ <p>• Les journalistes : c'est <b>moi</b> qui leur réponds. Prends seulement leurs coordonnées.</p>
+ <p>• Le parking devant l'entrée est <b>réservé aux personnes à mobilité réduite</b>.</p>
+ <p>• Les badges : je les imprime <b>moi-même samedi à 8 h</b>. »</p></div>`,
+ steps:[{q:"Pour vérifier que tu as bien lu : la 41e personne veut s'inscrire. Que fais-tu ?",opts:[
+  ["Je l'inscris sur la liste d'attente et je la préviens qu'on la recontactera si une place se libère.",10,"Exact : 40 places maximum, sans exception. La liste d'attente permet de ne perdre personne."],
+  ["Je l'inscris quand même : une personne de plus, ça ne change rien.",0,"La consigne dit « sans exception ». Tu ne peux pas décider seul(e) de dépasser la limite."],
+  ["Je refuse, tout simplement.",3,"Trop sec : la liste d'attente existe justement pour ce cas."],
+  ["Je l'inscris et je préviendrai Mme Vandamme ce soir.",0,"On ne décide pas d'abord pour prévenir après."]]}]},
+{t:"08:15",tag:"APPEL",cat:"c",title:"Un journaliste",
+ html:`<div class="quote"><p>« Bonjour, Marc Delvaux, du journal local. Je fais un article sur vos portes ouvertes. Je peux poser trois questions à M. Lambert, là, maintenant ? »</p></div>`,
+ steps:[{q:"Que réponds-tu ?",opts:[
+  ["« Avec plaisir. C'est Mme Vandamme qui s'occupe de la presse : puis-je noter vos coordonnées ? Elle vous rappellera. »",10,"Parfait : tu restes accueillant(e) et tu respectes la consigne sur les journalistes."],
+  ["« Je vous passe M. Lambert à l'atelier. »",2,"La note était claire : c'est Mme Vandamme qui répond à la presse."],
+  ["« Je peux répondre à vos questions moi-même. »",0,"Ce que tu dirais pourrait être publié dans le journal. Ce n'est pas ton rôle."],
+  ["« Nous ne parlons pas aux journalistes. »",0,"Faux, et très mauvais pour l'image de l'agence : un article, c'est de la publicité gratuite."]]}]},
+{t:"08:40",tag:"TÂCHE",cat:"p",title:"Le point sur les inscriptions",kind:"form",
+ html:`<p>Voici la liste des inscriptions reçues. Certaines personnes viennent à plusieurs.</p>
+ <div class="tablewrap"><table class="t"><thead><tr><th class="l">Inscription</th><th>Nombre de personnes</th></tr></thead><tbody>
+ <tr><td class="l">Famille Dubois</td><td>4</td></tr><tr><td class="l">M. Moreau</td><td>2</td></tr><tr><td class="l">Mme Leroy</td><td>1</td></tr>
+ <tr><td class="l">École Saint-Joseph</td><td>12</td></tr><tr><td class="l">Hôtel du Parc</td><td>3</td></tr><tr><td class="l">M. Petit</td><td>2</td></tr>
+ <tr><td class="l">Mme Janssens</td><td>5</td></tr><tr><td class="l">Club des aînés</td><td>8</td></tr></tbody></table></div>`,
+ fields:[
+  {label:"Combien de personnes sont inscrites au total ?",num:37,pts:5},
+  {label:"Combien de places reste-t-il ? (relis tes notes)",num:3,pts:5}],
+ fb:"4 + 2 + 1 + 12 + 3 + 2 + 5 + 8 = 37 personnes. Il reste 40 − 37 = 3 places."},
+{t:"09:00",tag:"E-MAIL",cat:"c",title:"Une famille de cinq",
+ html:`<div class="quote"><p>« Bonjour, nous aimerions venir à vos portes ouvertes samedi, à 5 personnes (2 adultes et 3 enfants). Merci ! Famille Lambrechts »</p></div><p>Tu viens de calculer qu'il reste 3 places.</p>`,
+ steps:[{q:"Que leur réponds-tu ?",opts:[
+  ["J'explique qu'il reste 3 places. Je leur propose de réserver ces 3 places et de mettre 2 personnes sur la liste d'attente, ou de mettre toute la famille sur la liste d'attente. Je leur laisse le choix.",10,"Très bien : tu es honnête, tu respectes la limite et c'est la famille qui décide."],
+  ["J'inscris les 5 : ce sont des enfants, ils ne prennent pas beaucoup de place.",0,"Un enfant compte comme une personne. La limite de 40 places est sans exception."],
+  ["J'inscris 3 personnes et je leur dis de choisir qui reste à la maison.",3,"L'idée des 3 places est bonne, mais le ton est maladroit, et tu oublies la liste d'attente."],
+  ["Je réponds que c'est complet.",1,"C'est faux : il reste 3 places."]]}]},
+{t:"09:30",tag:"TÂCHE",cat:"p",title:"La commande au traiteur",kind:"order",
+ html:`<div class="quote"><p>« Prévois la réception pour <b>40 personnes</b> : sandwiches, boissons, desserts et café pour tout le monde. Si le budget le permet, ajoute <b>1 plateau de sandwiches pour l'équipe</b>, mais rien d'autre. Budget maximum : <b>400 € TVAC</b>. »</p></div><p>Attention : chaque article est prévu pour un certain nombre de personnes.</p>`,
+ budget:400,
+ items:[["Plateau de sandwiches (pour 10 personnes)",38,5,4],["Pack de boissons (pour 10 personnes)",15,4,4],["Plateau de desserts (pour 10 personnes)",24,4,4],["Service café et thé (pour 20 personnes)",18,2,2]],
+ explain:"Pour 40 personnes : 4 plateaux de sandwiches (152 €), 4 packs de boissons (60 €), 4 plateaux de desserts (96 €) et 2 services café (36 €), soit 344 €. Le plateau de l'équipe ajoute 38 € : 382 €. Il reste 18 €, mais la consigne dit « rien d'autre »."},
+{t:"10:00",tag:"APPEL",cat:"c",title:"Une question sur l'accès",
+ html:`<div class="quote"><p>« Bonjour, je suis inscrite pour demain, mais je me déplace en fauteuil roulant. Est-ce que je pourrai entrer facilement ? Et où est-ce que je me gare ? »</p></div>`,
+ steps:[{q:"Que réponds-tu ?",opts:[
+  ["« Bien sûr, vous êtes la bienvenue. Le parking devant l'entrée est réservé aux personnes à mobilité réduite. Je note votre nom pour qu'on vous accueille à l'entrée. »",10,"Parfait : tu donnes l'information exacte (relis tes notes) et tu proposes un accueil personnalisé."],
+  ["« Garez-vous où vous pouvez, il y a de la place dans la rue. »",1,"Tu avais l'information : un parking réservé existe devant l'entrée."],
+  ["« Je ne sais pas, il faudra voir sur place. »",0,"La cliente risque de ne pas venir. Tu avais la réponse dans tes notes."],
+  ["« Le parking est réservé, mais je vais demander si vous y avez droit. »",4,"Elle se déplace en fauteuil : elle y a évidemment droit. Inutile de la faire attendre."]]}]},
+{t:"10:30",tag:"TÂCHE",cat:"p",title:"La liste des inscrits dans Excel",kind:"form",
+ html:`<p>La liste des inscrits est dans Excel. La colonne D contient le statut de chaque inscrit : « confirmé » ou « liste d'attente ». Les données vont de la ligne 2 à la ligne 50.</p>`,
+ fields:[
+  {label:"Tu veux afficher uniquement les inscrits de l'École Saint-Joseph, sans supprimer les autres. Tu utilises…",opts:["un filtre","la suppression des autres lignes","une nouvelle feuille recopiée à la main"],a:0,pts:3},
+  {label:"Quelle formule compte le nombre d'inscrits « confirmé » ?",opts:['=SOMME(D2:D50)','=NB.SI(D2:D50;"confirmé")','=NB(D2:D50)','=MOYENNE(D2:D50)'],a:1,pts:4},
+  {label:"Pour classer les inscrits par ordre alphabétique des noms, tu utilises…",opts:["Trier de A à Z","Mise en forme conditionnelle","Fusionner les cellules"],a:0,pts:3}],
+ fb:"Le filtre masque les lignes sans les effacer. NB.SI compte les cellules qui respectent une condition ; SOMME et MOYENNE ne fonctionnent qu'avec des nombres. « Trier de A à Z » classe par ordre alphabétique."},
+{t:"10:50",tag:"ALERTE",cat:"p",title:"Un coup de main ?",
+ html:`<div class="quote"><p>Tom arrive : « Tu peux venir m'aider à installer les chaises dans l'atelier ? Ça prendra 20 minutes, pas plus. »</p></div><p>Tu réalises que tu n'as pas encore envoyé la confirmation au traiteur. Relis tes notes.</p>`,
+ steps:[{q:"Que fais-tu ?",opts:[
+  ["« Avec plaisir, mais je dois d'abord confirmer le traiteur, c'est urgent. Je te rejoins dans 5 minutes. »",10,"Oui : le traiteur doit être confirmé avant 11 h. Dans 20 minutes, il serait trop tard, et il n'y aurait rien à manger demain."],
+  ["J'aide Tom d'abord : 20 minutes, ça passe.",0,"10 h 50 + 20 minutes = 11 h 10. Trop tard pour le traiteur !"],
+  ["Je refuse d'aider Tom : ce n'est pas mon travail.",3,"Tu confirmes le traiteur, mais refuser d'aider un collègue n'est pas une bonne attitude. Tu pouvais l'aider après."],
+  ["Je demande à Tom de confirmer le traiteur à ma place.",2,"C'est ta tâche, et Tom ne connaît pas la commande."]]}]},
+{t:"11:15",tag:"E-MAIL",cat:"c",title:"Le rappel aux inscrits",
+ html:`<p>Tu envoies un rappel aux 40 inscrits, qui ne se connaissent pas entre eux. Quel e-mail envoies-tu ? Relis tes notes pour vérifier les informations.</p>`,
+ steps:[{q:"Choisis le bon e-mail :",html:true,opts:[
+  [`<b>À :</b> l'agence · <b>Cci :</b> les 40 inscrits<br><b>Objet :</b> Rappel – Portes ouvertes du samedi 17 octobre<br><b>Pièce jointe :</b> Plan_acces.pdf<br>« Madame, Monsieur, Nous vous attendons ce samedi 17 octobre, de 10 h à 16 h. Vous trouverez le plan d'accès en pièce jointe. Bien à vous »`,10,"Tout est juste : les adresses sont cachées (Cci), la date et les heures sont exactes, et le plan est joint."],
+  [`<b>À :</b> l'agence · <b>Cci :</b> les 40 inscrits<br><b>Objet :</b> Rappel – Portes ouvertes du samedi 17 octobre<br><b>Pièce jointe :</b> Plan_acces.pdf<br>« Madame, Monsieur, Nous vous attendons ce samedi 17 octobre, de 10 h à 18 h. Vous trouverez le plan d'accès en pièce jointe. Bien à vous »`,3,"Presque parfait, mais l'horaire est faux : les portes ouvertes finissent à 16 h, pas à 18 h. Relis toujours les informations importantes."],
+  [`<b>À :</b> les 40 inscrits<br><b>Objet :</b> Rappel – Portes ouvertes du samedi 17 octobre<br><b>Pièce jointe :</b> Plan_acces.pdf<br>« Madame, Monsieur, Nous vous attendons ce samedi 17 octobre, de 10 h à 16 h. Vous trouverez le plan d'accès en pièce jointe. Bien à vous »`,2,"Les informations sont justes, mais chaque inscrit voit les adresses de 39 inconnus. C'est interdit (RGPD) : il fallait utiliser Cci."],
+  [`<b>À :</b> l'agence · <b>Cci :</b> les 40 inscrits<br><b>Objet :</b> Samedi !!<br><b>Pièce jointe :</b> aucune<br>« Coucou tout le monde, on vous attend samedi ! Le plan est en pièce jointe. Bisous »`,0,"Ton trop familier, objet vague, horaires absents, et la pièce jointe annoncée est oubliée."]]}]},
+{t:"11:45",tag:"VISITEUR",cat:"p",title:"La livraison du matériel",
+ html:`<p>Un livreur apporte le matériel loué pour demain. Compare le bon de commande et ce qui est réellement livré.</p>
+ <div class="tablewrap"><table class="t"><thead><tr><th class="l">Article</th><th>Commandé</th><th>Livré</th></tr></thead><tbody>
+ <tr><td class="l">Chaises pliantes</td><td>20</td><td>20</td></tr><tr><td class="l">Tables hautes</td><td>4</td><td>3</td></tr>
+ <tr><td class="l">Grilles d'exposition</td><td>2</td><td>2</td></tr><tr><td class="l">Nappes blanches</td><td>6</td><td>8</td></tr></tbody></table></div>`,
+ steps:[{q:"Que notes-tu sur le bon de livraison avant de signer ?",opts:[
+  ["« Reçu 3 tables hautes sur 4 commandées, et 8 nappes au lieu de 6 », puis je signe et je garde une copie.",10,"Parfait : tu signales les deux écarts. Sans la mention des nappes en trop, l'agence pourrait devoir les payer."],
+  ["« Reçu 3 tables hautes sur 4 commandées », puis je signe.",6,"Bien pour la table manquante, mais tu as oublié les 2 nappes en trop : elles pourraient être facturées."],
+  ["Je signe : les nappes en plus compensent la table manquante.",0,"Ce ne sont pas les mêmes articles ! Chaque écart doit être noté."],
+  ["Je refuse toute la livraison.",2,"Trop radical : l'agence a besoin de ce matériel demain."]]}]},
+{t:"12:30",tag:"ALERTE",cat:"p",title:"Une photo pour Facebook",
+ html:`<div class="quote"><p>Sarah, ta collègue : « On a 40 inscrits, c'est génial ! Je prends en photo la liste des inscrits et je la mets sur la page Facebook de l'agence ? »</p></div>`,
+ steps:[{q:"Que lui réponds-tu ?",opts:[
+  ["« Bonne idée de fêter ça, mais pas avec la liste : les noms des inscrits sont des données personnelles. Publie plutôt une photo de l'atelier en préparation avec « Complet ! ». »",10,"Exactement : on ne publie jamais de données personnelles sans accord, et tu proposes une meilleure idée."],
+  ["« D'accord, mais floute les numéros de téléphone. »",3,"Les noms seuls sont déjà des données personnelles. Ils ne peuvent pas être publiés sans l'accord des personnes."],
+  ["« Oui, super idée ! »",0,"Publier cette liste serait contraire au RGPD, et les clients seraient furieux."],
+  ["« Non. »",4,"Tu as raison de refuser, mais sans expliquer pourquoi, Sarah recommencera. Et tu pouvais proposer une alternative."]]}]},
+{t:"13:30",tag:"APPEL",cat:"c",title:"M. Petit n'est pas content",
+ html:`<p>Les inscriptions sont maintenant complètes : 40 personnes sur 40.</p>`,
+ steps:[
+  {q:"« Je me suis inscrit il y a deux semaines et je n'ai reçu aucune confirmation ! Je suis bien inscrit, oui ou non ? »",opts:[
+   ["« Je suis désolé(e) pour ce manque de confirmation. Je vérifie tout de suite… Oui, vous êtes bien inscrit, pour 2 personnes. »",4,"Tu t'excuses et tu vérifies avant de répondre. Il était bien dans la liste, pour 2 personnes."],
+   ["« Normalement oui, je pense. »",0,"Un client mécontent a besoin d'une réponse sûre : vérifie la liste."],
+   ["« Ce n'est pas moi qui m'occupe des confirmations. »",0,"Pour le client, tu représentes l'agence."]]},
+  {q:"« Bon. Et je peux venir avec 3 amis en plus ? »",opts:[
+   ["« Je suis désolé(e), nous sommes complets. Je peux inscrire vos amis sur la liste d'attente, et je vous recontacte si des places se libèrent. »",3,"Tu respectes la limite de 40 places, et tu proposes une solution."],
+   ["« Pas de problème, venez avec eux ! »",0,"C'est complet, et la consigne dit « sans exception »."],
+   ["« Non, c'est complet. »",1,"C'est vrai, mais tu oublies la liste d'attente."]]},
+  {q:"Comment termines-tu l'appel ?",opts:[
+   ["« Je vous envoie la confirmation écrite par e-mail avant 17 h. »",3,"Il se plaignait justement de ne rien avoir reçu : une confirmation écrite est indispensable. Note bien cette promesse !"],
+   ["« Voilà, tout est réglé, au revoir. »",1,"Il n'a toujours rien d'écrit."],
+   ["« Vous recevrez peut-être quelque chose. »",0,"Trop vague pour un client déjà mécontent."]]}]},
+{t:"14:00",tag:"TÂCHE",cat:"p",title:"La note de frais",kind:"form",
+ html:`<p>Mme Vandamme te demande de calculer sa note de frais de la semaine. L'agence rembourse <b>0,40 € par kilomètre</b>.</p>
+ <div class="tablewrap"><table class="t"><thead><tr><th class="l">Déplacement</th><th>Distance (aller simple)</th><th>Parking</th></tr></thead><tbody>
+ <tr><td class="l">Imprimerie</td><td>24 km</td><td>4,50 €</td></tr><tr><td class="l">Loueur de matériel</td><td>36 km</td><td>4,50 €</td></tr><tr><td class="l">Traiteur</td><td>18 km</td><td>4,50 €</td></tr></tbody></table></div>
+ <p>Elle a aussi payé un repas d'affaires de <b>18,90 €</b>. Chaque déplacement se fait en <b>aller-retour</b>.</p>`,
+ fields:[
+  {label:"Nombre total de kilomètres parcourus",num:156,pts:3},
+  {label:"Montant des kilomètres (€)",num:62.4,pts:3},
+  {label:"Total de la note de frais : kilomètres + parkings + repas (€)",num:94.8,pts:4}],
+ fb:"Aller-retour : (24 + 36 + 18) × 2 = 156 km. 156 × 0,40 = 62,40 €. Parkings : 3 × 4,50 = 13,50 €. Total : 62,40 + 13,50 + 18,90 = 94,80 €."},
+{t:"14:30",tag:"TÂCHE",cat:"p",title:"Le planning de samedi",
+ html:`<p>Répartis les 4 postes de samedi entre les 4 collègues. Chacun a un seul poste.</p>
+ <div class="quote">
+ <p>• <b>Accueil du matin</b> (10 h – 13 h, assis) · <b>Accueil de l'après-midi</b> (13 h – 16 h, assis)</p>
+ <p>• <b>Visites de l'atelier</b> (10 h – 16 h, debout) · <b>Bar à café</b> (10 h – 15 h, debout)</p></div>
+ <div class="rules">
+ <div class="rule">Sarah ne peut venir que le matin.</div>
+ <div class="rule">Nadia s'est blessée au pied : elle doit rester assise.</div>
+ <div class="rule">Les visites de l'atelier doivent être faites par Tom ou Lucas, qui connaissent les machines.</div>
+ <div class="rule">Tom doit partir à 15 h.</div></div>`,
+ kind:"form",
+ fields:[
+  {label:"Sarah",opts:["Accueil du matin","Accueil de l'après-midi","Visites de l'atelier","Bar à café"],a:0,pts:2.5},
+  {label:"Nadia",opts:["Accueil du matin","Accueil de l'après-midi","Visites de l'atelier","Bar à café"],a:1,pts:2.5},
+  {label:"Tom",opts:["Accueil du matin","Accueil de l'après-midi","Visites de l'atelier","Bar à café"],a:3,pts:2.5},
+  {label:"Lucas",opts:["Accueil du matin","Accueil de l'après-midi","Visites de l'atelier","Bar à café"],a:2,pts:2.5}],
+ fb:"Sarah ne vient que le matin : accueil du matin. Nadia doit être assise, et le matin est pris : accueil de l'après-midi. Les visites durent jusqu'à 16 h et Tom part à 15 h : Lucas fait les visites. Tom prend le bar, qui ferme à 15 h."},
+{t:"15:15",tag:"E-MAIL",cat:"p",title:"Votre boîte mail est pleine",
+ html:`<div class="mailc"><p><b>De :</b> support@outlook-securite-verif.com</p><p><b>Objet :</b> Action requise : votre boîte mail sera bloquée ce soir</p><p>Votre espace de stockage est plein. Pour éviter le blocage de votre compte, reconnectez-vous ici avec votre adresse et votre mot de passe : <u>verifier-mon-compte</u></p></div>`,
+ steps:[{q:"Que fais-tu ?",opts:[
+  ["Je ne clique pas et je ne donne rien. Je signale le message comme hameçonnage et je préviens M. Lambert.",10,"Bien vu : l'adresse n'appartient pas à Microsoft, le ton est menaçant et on te demande ton mot de passe. C'est du « phishing »."],
+  ["Je clique pour vérifier si c'est vrai, mais je ne tape pas mon mot de passe.",3,"Cliquer peut déjà être dangereux (virus, suivi). Dans le doute, on ne clique jamais."],
+  ["Je supprime le message sans rien dire.",5,"Tu évites le piège, mais tes collègues l'ont peut-être reçu aussi : il faut prévenir."],
+  ["Je me reconnecte : je ne veux pas perdre ma boîte mail.",0,"Les pirates auraient ton mot de passe et pourraient lire tous les mails de l'agence."]]}]},
+{t:"15:45",tag:"E-MAIL",cat:"c",title:"La relecture de l'affiche",kind:"form",
+ html:`<p>L'affiche de samedi part à l'impression. Choisis la bonne orthographe.</p>`,
+ fields:[
+  {label:"Venez … ! (nous voulons beaucoup de monde)",opts:["nombreux","nombreu","nombreus"],a:0,pts:2},
+  {label:"Nous vous attendons … partir de 10 h.",opts:["a","à"],a:1,pts:2},
+  {label:"Les meubles exposés … en vente.",opts:["son","sont"],a:1,pts:2},
+  {label:"Les enfants et … parents sont les bienvenus.",opts:["leur","leurs"],a:1,pts:2},
+  {label:"Un verre de l'amitié vous sera …",opts:["offert","offrir","offre"],a:0,pts:2}],
+ fb:"« Nombreux » s'écrit toujours avec un x. « À » partir de (on ne peut pas dire « avait partir »). « Sont » = « étaient ». Chaque enfant a deux parents : « leurs ». Après « sera », le participe passé : « offert »."},
+{t:"16:15",tag:"TÂCHE",cat:"c",title:"Plus que 30 minutes",
+ html:`<p>Il te reste 30 minutes avant de partir. Tu ne peux faire qu'<b>une seule</b> de ces tâches. Relis tes notes.</p>`,
+ steps:[{q:"Laquelle choisis-tu ?",opts:[
+  ["Envoyer à M. Petit la confirmation écrite promise « avant 17 h ».",10,"Oui : c'est une promesse faite à un client mécontent. Ne pas la tenir, ce serait refaire la même erreur qu'avant."],
+  ["Imprimer les 40 badges pour demain.",2,"Relis tes notes : Mme Vandamme les imprime elle-même samedi à 8 h."],
+  ["Préparer la réponse au journaliste.",0,"C'est Mme Vandamme qui répond à la presse."],
+  ["Ranger le bureau pour demain.",1,"Utile, mais rien d'urgent par rapport à une promesse faite à un client."]]}]},
+{t:"16:45",tag:"TÂCHE",cat:"p",title:"La note pour Mme Vandamme",kind:"multi",
+ html:`<p>Avant de partir, tu laisses une note à Mme Vandamme pour demain matin. Coche tout ce qui doit y figurer, et seulement cela.</p>`,
+ opts:[["Les coordonnées du journaliste, qui attend son appel",1],["La table haute manquante et les 2 nappes livrées en trop",1],["Les personnes sur liste d'attente (famille Lambrechts, amis de M. Petit)",1],["Le mail d'hameçonnage reçu à 15 h 15",1],["Le fait que tu as trouvé la journée fatigante",0],["Le mot de passe de ta boîte mail, au cas où",0],["La liste des 40 badges déjà imprimés",0]],
+ fb:"La note contient ce qu'elle doit savoir ou faire. Un mot de passe ne s'écrit jamais sur une note, et les badges ne sont pas imprimés : c'est elle qui s'en charge samedi."}
+];
+const MAX = 10*EVENTS.length;
+
+/* ---------- État ---------- */
+let S={phase:"start",i:0,scores:[],best:0};
+try{const s=localStorage.getItem(KEY); if(s) S=Object.assign(S,JSON.parse(s));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s), app=$("#app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const fmt=n=>n.toFixed(2).replace(".",",")+" €";
+const r1=n=>Math.round(n*2)/2;
+
+function updateTop(){
+  const show=S.phase==="play"; $("#top").hidden=!show; if(!show) return;
+  const ev=EVENTS[Math.min(S.i,EVENTS.length-1)]; $("#clock").textContent=ev.t;
+  ["c","p"].forEach(cat=>{
+    let got=0,max=0; S.scores.forEach((s,k)=>{ if(EVENTS[k].cat===cat){got+=s;max+=10;} });
+    const pct=max?Math.round(got/max*100):50;
+    $("#f"+cat).style.width=pct+"%"; $("#g"+cat).textContent=max?pct+" %":"–";
+  });
+  $("#dayfill").style.width=(S.scores.length/EVENTS.length*100)+"%";
+}
+function feedback(pts, lines){
+  const cls=pts>=8?"good":pts>=4?"mid":"bad";
+  const head=pts>=8?"Très bien !":pts>=4?"Pas mal, mais il y avait mieux.":"Aïe…";
+  return `<div class="fb ${cls}" role="status"><strong>${head} +${String(pts).replace(".",",")} / 10</strong>${lines.map(l=>`<p>${l}</p>`).join("")}</div>`;
+}
+function nextBtn(box, pts){
+  const b=document.createElement("div"); b.className="actions";
+  b.innerHTML=`<button class="btn" id="next">${S.i+1<EVENTS.length?"Suite de la journée →":"Voir mon évaluation →"}</button>`;
+  box.appendChild(b);
+  $("#next").onclick=()=>{ S.scores[S.i]=pts; S.i++; if(S.i>=EVENTS.length){S.phase="end"; S.best=Math.max(S.best,total());} save(); render(); };
+  $("#next").focus();
+}
+const total=()=>S.scores.reduce((a,b)=>a+b,0);
+
+/* ---------- Rendu des événements ---------- */
+function renderEvent(){
+  const ev=EVENTS[S.i];
+  app.innerHTML=`<article class="card" style="border-left-color:${TAGS[ev.tag]}">
+    <span class="tag" style="background:${TAGS[ev.tag]}">${ev.tag} · ${ev.t}</span>
+    <h2>${ev.title}</h2>${ev.html}<div id="zone"></div></article>
+    <p class="small" style="margin-top:14px">Événement ${S.i+1} sur ${EVENTS.length} · Chaque décision est définitive : lis bien avant de valider.</p>`;
+  const z=$("#zone");
+  if(ev.steps) return stepsEvent(ev,z);
+  if(ev.kind==="multi") return multiEvent(ev,z);
+  if(ev.kind==="form") return formEvent(ev,z);
+  if(ev.kind==="order") return orderEvent(ev,z);
+}
+let lastBest=-1;
+function stepsEvent(ev,z){
+  let k=0, pts=0;
+  const step=()=>{
+    const st=ev.steps[k], max=Math.max(...st.opts.map(o=>o[1]));
+    let opts=shuffle(st.opts), tries=0;
+    while(opts.findIndex(o=>o[1]===max)===lastBest && tries++<20) opts=shuffle(st.opts);
+    lastBest=opts.findIndex(o=>o[1]===max);
+    const w=document.createElement("div");
+    w.innerHTML=`<p><b>${esc(st.q)}</b></p><div class="opts">${opts.map((o,j)=>`<label class="opt"><input type="radio" name="s${k}" value="${j}"><span>${st.html?o[0]:esc(o[0])}</span></label>`).join("")}</div>
+      <div class="actions"><button class="btn" disabled>Valider</button></div>`;
+    z.appendChild(w);
+    const btn=w.querySelector("button");
+    w.querySelectorAll("input").forEach(r=>r.onchange=()=>btn.disabled=false);
+    btn.onclick=()=>{
+      const j=+w.querySelector("input:checked").value, o=opts[j];
+      w.querySelectorAll("input").forEach(r=>r.disabled=true); btn.parentNode.remove();
+      w.querySelectorAll(".opt").forEach((l,x)=>{ if(opts[x][1]===max) l.classList.add("best"); else if(x===j) l.classList.add("picked-bad"); });
+      pts+=o[1]; k++;
+      if(k<ev.steps.length){ const p=document.createElement("p"); p.className="small"; p.textContent=o[2]; w.appendChild(p); step(); }
+      else { z.insertAdjacentHTML("beforeend",feedback(pts,[esc(o[2])].concat(pts<ev.steps.reduce((a,st)=>a+Math.max(...st.opts.map(x=>x[1])),0)?["La meilleure réponse est encadrée en vert."]:[]))); nextBtn(z,pts); }
+    };
+  };
+  step();
+}
+function multiEvent(ev,z){
+  const opts=shuffle(ev.opts), nOk=opts.filter(o=>o[1]).length;
+  z.innerHTML=`<div class="opts">${opts.map((o,j)=>`<label class="opt"><input type="checkbox" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}</div><div class="actions"><button class="btn">Valider</button></div>`;
+  z.querySelector(".btn").onclick=function(){
+    let good=0,bad=0;
+    z.querySelectorAll("input").forEach((c,j)=>{ c.disabled=true; const lab=c.parentNode;
+      if(opts[j][1]) lab.classList.add("best"); if(c.checked){ if(opts[j][1]) good++; else {bad++; lab.classList.add("picked-bad");} } });
+    const pts=Math.max(0,r1(10*(good-bad)/nOk));
+    this.parentNode.remove();
+    z.insertAdjacentHTML("beforeend",feedback(pts,[`${good} bonne(s) réponse(s) cochée(s) sur ${nOk}${bad?`, et ${bad} case(s) cochée(s) à tort`:""}. Les bonnes réponses sont encadrées en vert.`,ev.fb]));
+    nextBtn(z,pts);
+  };
+}
+function formEvent(ev,z){
+  z.innerHTML=ev.fields.map((f,i)=>`<div class="field"><label for="fld${i}">${esc(f.label)}</label>${
+    f.num!==undefined?`<input type="text" id="fld${i}" inputmode="decimal" style="width:160px">`
+    :`<select id="fld${i}"><option value="">— Choisis —</option>${shuffle(f.opts.map((o,j)=>[o,j])).map(([o,j])=>`<option value="${j}">${esc(o)}</option>`).join("")}</select>`}</div>`).join("")
+    +`<div class="actions"><button class="btn">Valider</button></div><p class="small" id="warn"></p>`;
+  z.querySelector(".btn").onclick=function(){
+    const els=ev.fields.map((f,i)=>$("#fld"+i));
+    if(els.some(e=>e.value==="")){ $("#warn").textContent="Réponds à toutes les questions avant de valider."; return; }
+    let pts=0, wrong=[];
+    ev.fields.forEach((f,i)=>{ const e=els[i]; e.disabled=true;
+      const ok = f.num!==undefined ? Math.abs(parseFloat(String(e.value).replace(/\s|€/g,"").replace(",","."))-f.num)<0.011 : +e.value===f.a;
+      if(ok){pts+=f.pts; e.style.borderColor="var(--ok)";} else { e.style.borderColor="var(--err)";
+        wrong.push(`« ${f.label} » → ${f.num!==undefined?String(f.num).replace(".",","):f.opts[f.a]}`); } });
+    this.parentNode.remove(); $("#warn").remove();
+    pts=r1(pts);
+    z.insertAdjacentHTML("beforeend",feedback(pts,(wrong.length?["Corrections : "+wrong.join(" ; ")]:[]).concat([ev.fb])));
+    nextBtn(z,pts);
+  };
+}
+function orderEvent(ev,z){
+  const B=ev.budget;
+  z.innerHTML=`<div class="tablewrap"><table class="t"><thead><tr><th class="l">Article</th><th>Prix</th><th>Quantité</th><th>Montant</th></tr></thead><tbody>
+    ${ev.items.map((it,i)=>`<tr><td class="l">${it[0]}</td><td>${fmt(it[1])}</td><td><input type="number" min="0" step="1" value="0" id="q${i}" aria-label="Quantité ${esc(it[0])}" style="width:80px"></td><td id="m${i}">${fmt(0)}</td></tr>`).join("")}
+    </tbody></table></div><p class="total">Total : <span id="tot">0,00 €</span> / ${fmt(B)}</p><div class="actions"><button class="btn">Passer la commande</button></div>`;
+  const qs=()=>ev.items.map((_,i)=>Math.max(0,Math.floor(Number($("#q"+i).value)||0)));
+  const upd=()=>{ const q=qs(); let t=0; q.forEach((n,i)=>{const m=n*ev.items[i][1]; t+=m; $("#m"+i).textContent=fmt(m);}); $("#tot").textContent=fmt(t); $("#tot").style.color=t>B+0.0001?"var(--err)":""; return t; };
+  z.querySelectorAll("input").forEach(e=>e.oninput=upd);
+  z.querySelector(".btn").onclick=function(){
+    const q=qs(), t=upd();
+    const short=q.some((n,i)=>n<ev.items[i][3]), ideal=q.every((n,i)=>n===ev.items[i][2]);
+    z.querySelectorAll("input").forEach(e=>e.disabled=true); this.parentNode.remove();
+    let pts, msg;
+    if(t>B+0.0001){ pts=0; msg=`Budget dépassé (${fmt(t)}) : la commande est refusée.`; }
+    else if(short){ pts=3; msg="Tu respectes le budget, mais il n'y aura pas assez pour tout le monde."; }
+    else if(ideal){ pts=10; msg="Commande parfaite : tout le monde est servi, l'équipe aussi, et le budget est respecté."; }
+    else { pts=6; msg="Tout le monde est servi et le budget est respecté, mais la commande ne suit pas exactement la consigne."; }
+    z.insertAdjacentHTML("beforeend",feedback(pts,[msg,ev.explain]));
+    nextBtn(z,pts);
+  };
+}
+
+/* ---------- Écrans d'accueil et de fin ---------- */
+function renderStart(){
+  app.innerHTML=`<section class="card hero">
+    <h1>La veille des portes ouvertes</h1>
+    <p>« Demain, l'agence ouvre ses portes au public. Aujourd'hui, je suis dehors pour les préparatifs et M. Lambert est à l'atelier. Tout ce qui arrive au secrétariat, c'est toi qui le gères. »</p>
+    <p class="sign">Mme Vandamme, directrice</p></section>
+  <section class="card"><h2>Avant de commencer</h2>
+    <ul class="rules-list">
+      <li><b>Prends une feuille et un bic.</b> Certaines informations ne sont données qu'une seule fois, et tu en auras besoin plus tard dans la journée.</li>
+      <li>La journée compte <b>18 événements</b> : appels, e-mails, visiteurs, calculs et organisation. Calculatrice autorisée.</li>
+      <li>Plusieurs réponses semblent bonnes : cherche la <b>plus professionnelle</b>.</li>
+      <li>Pas de retour en arrière. Lis chaque explication : elle te servira.</li>
+      <li>Objectif : au moins <b>80 %</b> pour réussir ta journée et débloquer la mission finale.</li>
+    </ul>
+    ${S.best?`<p class="small" style="margin-top:12px">Ton meilleur score sur ce poste : ${Math.round(S.best/MAX*100)} %</p>`:""}
+    <div class="actions"><button class="btn" id="go">${S.phase==="play"?"Reprendre ma journée":"Commencer la journée"}</button></div></section>`;
+  $("#go").onclick=()=>{ if(S.phase!=="play"){S.phase="play";S.i=0;S.scores=[];} save(); render(); };
+}
+function renderEnd(){
+  const t=total(), pct=Math.round(t/MAX*100);
+  const [stars,title,msg]= pct>=90?["★★★","Tout est prêt pour demain !","« Rien ne t'a échappé. Grâce à toi, les portes ouvertes vont être une réussite. »"]
+    : pct>=80?["★★☆","Journée réussie !","« Très bon travail. Demain, tout devrait bien se passer. »"]
+    : pct>=60?["★☆☆","Quelques couacs","« Il y a eu quelques oublis : j'espère que demain se passera bien… » Recommence pour atteindre 80 %."]
+    :["☆☆☆","Journée difficile…","« Relis bien tes notes et les explications, puis retente ta chance. »"];
+  app.innerHTML=`<section class="card hero"><div class="stars" aria-label="${stars.split("★").length-1} étoiles sur 3">${stars}</div>
+    <h1>${title}</h1><p>${esc(msg)}</p><p><b>Score : ${String(t).replace(".",",")} / ${MAX} (${pct} %)</b></p></section>
+    <section class="card"><h2>Ton bulletin de la journée</h2><table class="recap">${EVENTS.map((e,k)=>`<tr><td>${e.t} · ${e.title}</td><td>${String(S.scores[k]).replace(".",",")} / 10</td></tr>`).join("")}</table>
+    <div class="actions"><button class="btn ${pct>=80?"ghost":""}" id="again">Refaire la journée</button></div>
+    <p class="small">Astuce : les réponses sont mélangées à chaque nouvelle partie.</p></section>
+    ${pct>=80?bonusHtml():`<section class="card"><h2>Mission finale verrouillée</h2><p>Atteins au moins 80 % pour débloquer la dernière mission.</p></section>`}`;
+  $("#again").onclick=()=>{S.phase="play";S.i=0;S.scores=[];save();render();};
+}
+function bonusHtml(){
+  return `<section class="card" style="border-left-color:var(--ok)"><span class="tag" style="background:var(--ok)">MISSION FINALE</span>
+    <h2>L'affiche et la réponse à la famille (dans Word)</h2>
+    <p>Avec tes notes de la journée, réalise deux documents dans le même fichier Word. Coche chaque point quand il est fait :</p>
+    <div class="check">
+      ${["Page 1 : une affiche A4 pour les portes ouvertes, avec un grand titre","La date et les heures exactes (vérifie dans tes notes)","L'inscription obligatoire et le nombre de places limité","L'information sur le parking réservé aux personnes à mobilité réduite","Au moins une image ou une forme, et des couleurs lisibles","Les 5 phrases corrigées dans la relecture de l'affiche sont utilisées sans faute","Page 2 : l'e-mail à la famille Lambrechts (3 places disponibles, liste d'attente, leur choix)","Objet précis, formule d'appel, formule de politesse, signature, zéro faute"].map(x=>`<label><input type="checkbox"> ${x}</label>`).join("")}
+    </div>
+    <p style="margin-top:14px"><b>Quand tout est coché, lève la main et montre ton document au professeur.</b></p></section>`;
+}
+function render(){ updateTop(); if(S.phase==="start") renderStart(); else if(S.phase==="play") renderEvent(); else renderEnd(); window.scrollTo(0,0); }
+
+/* Bouton discret pour l'élève suivant */
+const foot=document.createElement("p"); foot.className="small"; foot.style.cssText="max-width:860px;margin:0 auto;padding:0 18px 40px";
+foot.innerHTML=`Un autre élève doit commencer ? <button class="linkbtn" id="reset">Tout effacer</button>`;
+document.body.appendChild(foot);
+$("#reset").onclick=()=>{ if(!confirm("Effacer la partie en cours et le meilleur score ?")) return; S={phase:"start",i:0,scores:[],best:0}; save(); render(); };
+if(S.phase==="play"){ updateTop(); $("#top").hidden=true; renderStart(); } else render();
+</script>
+</body>
+</html>
