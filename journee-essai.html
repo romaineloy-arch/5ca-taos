@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le jour d'essai — simulation de secrétariat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F4; --card:#FFFFFF; --ink:#18212B; --muted:#56636F; --line:#CDD5DC;
+  --bar:#16202B; --bar-ink:#F3F5F7; --accent:#E8772E; --accent-ink:#FFFFFF;
+  --ok:#237A4B; --ok-bg:#E3F3E8; --mid:#9A6A00; --mid-bg:#FFF3D6; --err:#B3261E; --err-bg:#FBE6E4;
+  --t-call:#2F6FB0; --t-mail:#7B4FB0; --t-visit:#1F8A70; --t-task:#E8772E; --t-alert:#B3261E;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12181E; --card:#1E2730; --ink:#E6EBEF; --muted:#9AA8B4; --line:#34424E;
+    --bar:#0B1015; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12181E; --card:#1E2730; --ink:#E6EBEF; --muted:#9AA8B4; --line:#34424E;
+  --bar:#0B1015; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 90px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+h1,h2,h3{font-family:"Space Grotesk","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.2;margin:0}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{max-width:860px;margin:0 auto;padding:24px 18px 60px}
+
+/* Barre du haut : horloge + jauges */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar);color:var(--bar-ink);padding:10px 18px}
+.top-in{max-width:860px;margin:0 auto;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.clock{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:34px;letter-spacing:.04em;color:var(--accent)}
+.gauges{display:flex;gap:18px;flex:1;min-width:240px;flex-wrap:wrap}
+.gauge{flex:1;min-width:130px}
+.gauge span{font-size:13px;opacity:.85;display:flex;justify-content:space-between}
+.gauge .track{height:10px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden;margin-top:3px}
+.gauge .fill{height:100%;background:var(--accent);width:50%;transition:width .5s}
+.day{height:4px;background:rgba(255,255,255,.12);margin-top:8px;max-width:860px;margin-left:auto;margin-right:auto}
+.day div{height:100%;background:var(--accent);transition:width .5s}
+
+/* Cartes */
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:24px;margin-top:22px;border-left:6px solid var(--accent)}
+.tag{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.08em;color:#fff;padding:3px 10px;border-radius:3px;margin-bottom:10px}
+.card h2{font-size:26px;margin-bottom:10px}
+.card p{margin:0 0 12px}
+.quote{background:var(--bg);border-left:4px solid var(--line);padding:12px 16px;margin:0 0 16px;border-radius:0 4px 4px 0}
+.quote p{margin:0 0 6px}
+.opts{display:grid;gap:10px;margin:14px 0}
+.opt{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--card);cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:5px;width:18px;height:18px;flex:none}
+.opt.best{border-color:var(--ok);background:var(--ok-bg)}
+.opt.picked-bad{border-color:var(--err)}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;padding:12px 22px;border-radius:5px;font-weight:700;font-size:18px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.fb{margin-top:16px;padding:14px 16px;border-radius:5px}
+.fb.good{background:var(--ok-bg);color:var(--ok)} .fb.mid{background:var(--mid-bg);color:var(--mid)} .fb.bad{background:var(--err-bg);color:var(--err)}
+.fb strong{display:block;font-size:20px;margin-bottom:4px}
+.fb p{margin:4px 0 0;color:var(--ink)}
+.field{display:grid;gap:4px;margin-bottom:14px;max-width:560px}
+.field label{font-weight:700}
+select,input[type=text],input[type=number]{padding:8px 10px;border:2px solid var(--line);border-radius:4px;background:var(--card);max-width:100%}
+.tablewrap{overflow-x:auto;margin:0 0 16px}
+table.t{border-collapse:collapse;font-size:16px;background:var(--card)}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 10px;text-align:center}
+table.t td.l,table.t th.l{text-align:left}
+.busy{background:var(--err-bg);color:var(--err);font-weight:700}
+.total{font-weight:700;font-size:20px;margin-top:8px}
+.mailc{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--bg);font-size:16px}
+.mailc p{margin:0 0 6px}
+
+/* Accueil et fin */
+.hero{background:var(--bar);color:var(--bar-ink);border-radius:6px;padding:30px 28px;border-left:0}
+.hero h1{font-size:36px;margin-bottom:12px}
+.hero p{margin:0 0 12px;max-width:62ch}
+.hero .sign{font-style:italic;opacity:.85}
+.rules-list{margin:10px 0 0;padding-left:22px}
+.rules-list li{margin-bottom:6px}
+.stars{font-size:44px;color:var(--accent);letter-spacing:.1em}
+.recap{width:100%;border-collapse:collapse;font-size:16px;margin-top:10px}
+.recap td{border-bottom:1px solid var(--line);padding:6px 4px}
+.recap td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.check label{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:4px;flex:none}
+.small{font-size:15px;color:var(--muted)}
+.linkbtn{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font-size:15px}
+[hidden]{display:none!important}
+@media (max-width:560px){.clock{font-size:26px}.hero h1{font-size:28px}.card{padding:18px}}
+@media (prefers-reduced-motion:reduce){.gauge .fill,.day div{transition:none}}
+</style>
+</head>
+<body>
+<div class="top" id="top" hidden>
+  <div class="top-in">
+    <div class="clock" id="clock">08:00</div>
+    <div class="gauges">
+      <div class="gauge"><span><b>Clients satisfaits</b><b id="gc">–</b></span><div class="track"><div class="fill" id="fc"></div></div></div>
+      <div class="gauge"><span><b>Confiance de la patronne</b><b id="gp">–</b></span><div class="track"><div class="fill" id="fp"></div></div></div>
+    </div>
+  </div>
+  <div class="day"><div id="dayfill" style="width:0"></div></div>
+</div>
+<main id="app"></main>
+
+<p style="max-width:980px;margin:0 auto;padding:0 18px 30px;font-size:16px"><a href="index.html" style="color:inherit;font-weight:700">← Retour à tous les jeux</a></p>
+<script>
+const KEY="journee-essai-v1";
+const TAGS={APPEL:"var(--t-call)","E-MAIL":"var(--t-mail)",VISITEUR:"var(--t-visit)",TÂCHE:"var(--t-task)",ALERTE:"var(--t-alert)"};
+
+/* ---------- Les 15 événements de la journée ---------- */
+const EVENTS=[
+{t:"08:00",tag:"APPEL",cat:"p",title:"Le répondeur",
+ html:`<p>Trois messages ont été laissés pendant la nuit :</p><div class="quote">
+ <p><b>1.</b> Mme Leroy : « Je voulais juste vous remercier, la table est magnifique ! »</p>
+ <p><b>2.</b> Garage Dumont : « Votre camionnette est prête, venez la chercher quand vous voulez cette semaine. »</p>
+ <p><b>3.</b> Mme Fontaine, Hôtel du Parc : « Votre livreur est devant l'hôtel mais le quai est fermé. Rappelez-moi tout de suite ! »</p></div>`,
+ steps:[{q:"Quel message traites-tu en premier ?",opts:[
+  ["Le message de Mme Fontaine",10,"Oui : c'est le seul qui a une conséquence immédiate. Le livreur attend et la cliente s'impatiente."],
+  ["Le message du garage",2,"Le garage dit « quand vous voulez cette semaine » : ce n'est pas urgent."],
+  ["Le message de Mme Leroy",0,"C'est un gentil message, à transmettre à la patronne, mais il n'y a rien d'urgent."]]}]},
+{t:"08:20",tag:"VISITEUR",cat:"c",title:"Un visiteur sans rendez-vous",
+ html:`<p>Un homme entre : « Bonjour, je voudrais voir Mme Vandamme, c'est pour une armoire. » Il n'a pas de rendez-vous. Mme Vandamme est au téléphone pour au moins 20 minutes.</p>`,
+ steps:[{q:"Que lui dis-tu ?",opts:[
+  ["« Bonjour Monsieur, bienvenue. Mme Vandamme est en communication. Souhaitez-vous patienter ou préférez-vous un rendez-vous ? Puis-je avoir votre nom ? »",10,"Parfait : tu accueilles, tu expliques la situation, tu proposes un choix et tu te renseignes."],
+  ["« Asseyez-vous, elle arrive tout de suite. »",4,"C'est poli, mais c'est une fausse promesse : il va attendre 20 minutes."],
+  ["« Je vais la chercher. »",3,"On n'interrompt pas un appel de la patronne pour un visiteur sans rendez-vous."],
+  ["« Elle est occupée, revenez plus tard. »",0,"Trop sec : un visiteur, c'est peut-être une commande. Il risque de ne jamais revenir."]]}]},
+{t:"08:45",tag:"APPEL",cat:"c",title:"Le téléphone sonne",
+ html:`<p>Tu es en train de noter le nom du visiteur quand le téléphone sonne.</p>`,
+ steps:[{q:"Que fais-tu ?",opts:[
+  ["Je dis au visiteur « Excusez-moi un instant », je décroche, je prends le message rapidement et je reviens vers lui.",10,"Bonne gestion : aucun des deux clients n'est négligé, et tu préviens le visiteur."],
+  ["Je laisse sonner : le visiteur était là avant.",4,"Respectueux pour le visiteur, mais un appel manqué, c'est peut-être un client perdu."],
+  ["Je décroche et je discute 10 minutes, le visiteur attendra.",0,"Le visiteur se sent oublié. Au téléphone, on prend le message et on rappelle."],
+  ["Je décroche et je raccroche aussitôt.",0,"Très impoli pour la personne qui appelle."]]}]},
+{t:"09:15",tag:"E-MAIL",cat:"c",title:"Une question de M. Moreau",
+ html:`<div class="quote"><p>« Bonjour, ma bibliothèque (1 450 €) pourra-t-elle être livrée avant Noël ? Et la livraison est-elle payante ? »</p></div>
+ <p>Les informations de la patronne : livraison possible le 18 décembre. Frais de livraison de 60 €, offerts pour toute commande de plus de 1 000 €.</p>`,
+ steps:[{q:"Quelle réponse envoies-tu ?",opts:[
+  ["« Monsieur Moreau, Merci pour votre message. Votre bibliothèque pourra être livrée le 18 décembre. Comme votre commande dépasse 1 000 €, la livraison vous est offerte. Bien à vous, Le secrétariat »",10,"Complète, correcte, polie et sans faute."],
+  ["« ok pour le 18 decembre, la livraison est gratuite vu que vous avez payer plus de 1000 € »",5,"Les informations sont justes, mais il n'y a ni formule d'appel ni signature, et il y a des fautes (décembre, payé)."],
+  ["« Salut ! Oui pas de souci pour Noël. La livraison coûte 60 €. À plus ! »",1,"Ton trop familier, date imprécise, et l'information est fausse : la livraison est offerte."]]}]},
+{t:"09:45",tag:"TÂCHE",cat:"p",title:"La commande de fournitures",kind:"order",
+ html:`<div class="quote"><p>« Il nous faut <b>au minimum</b> : 4 ramettes de papier, 1 cartouche d'encre, 3 boîtes d'enveloppes et 5 classeurs. Budget maximum : <b>60 € TVAC</b>. S'il reste de l'argent, prends des stylos. »</p></div>`,
+ items:[["Ramette de papier A4",4.5,4],["Cartouche d'encre noire",18,1],["Boîte de 50 enveloppes",3.2,3],["Classeur à levier",2.8,5],["Boîte de 10 stylos",3.5,0]]},
+{t:"10:30",tag:"TÂCHE",cat:"p",title:"Le classement des fichiers",kind:"form",
+ html:`<p>À l'agence, chaque fichier est nommé ainsi : <b>AAAA-MM-JJ_Type_Client</b>. Pas d'espace, pas d'accent, pas de caractère spécial (&amp;, é…).</p><p>Exemple : <b>2026-10-05_Devis_Moreau</b></p>`,
+ fields:[
+  {label:"Facture pour l'Hôtel du Parc du 3 novembre 2026",opts:["2026-11-03_Facture_HotelDuParc","03-11-2026_Facture_HotelDuParc","2026-11-03_HotelDuParc_Facture"],a:0,pts:2.5},
+  {label:"Devis pour M. Moreau du 18 septembre 2026",opts:["2026-18-09_Devis_Moreau","2026-09-18_Devis_Moreau","Devis Moreau septembre"],a:1,pts:2.5},
+  {label:"Réclamation de Mme Leroy du 7 octobre 2026",opts:["reclamation_leroy_2026","2026-10-7_Reclamation_Leroy","2026-10-07_Reclamation_Leroy"],a:2,pts:2.5},
+  {label:"Bon de commande Bois & Co du 21 octobre 2026",opts:["2026-10-21_Bon de commande_Bois&Co","2026-10-21_BonDeCommande_BoisEtCo","2026-21-10_BonDeCommande_BoisEtCo"],a:1,pts:2.5}],
+ fb:"L'ordre année-mois-jour permet de trier les fichiers par date automatiquement. Le mois et le jour s'écrivent toujours avec 2 chiffres (07, pas 7)."},
+{t:"11:00",tag:"TÂCHE",cat:"p",title:"La réunion d'équipe",kind:"multi",
+ html:`<p>Tu prends des notes pendant la réunion. Pour le procès-verbal, on ne garde que les <b>décisions</b>. Coche uniquement les phrases qui sont des décisions.</p>`,
+ opts:[["Le magasin sera fermé le 2 novembre.",1],["M. Lambert pense qu'il fera froid cet hiver.",0],["Le prix des chaises augmente de 5 % au 1er janvier.",1],["Sarah trouve que le café de la machine est mauvais.",0],["Tom est responsable des livraisons à partir de lundi.",1],["On a parlé du match de dimanche.",0]],
+ fb:"Une décision change quelque chose de concret (une date, un prix, une responsabilité). Les avis et les discussions ne vont pas dans le procès-verbal."},
+{t:"11:45",tag:"TÂCHE",cat:"p",title:"L'impression urgente",kind:"form",
+ html:`<p>Mme Vandamme : « Imprime-moi 25 exemplaires du catalogue. Il fait 6 pages. Imprime en <b>recto-verso</b> pour économiser le papier. »</p>`,
+ fields:[{label:"Combien de feuilles de papier vas-tu utiliser ?",num:75,pts:10}],
+ fb:"En recto-verso, une feuille porte 2 pages : 6 pages = 3 feuilles par exemplaire. 25 × 3 = 75 feuilles."},
+{t:"12:30",tag:"ALERTE",cat:"c",title:"Pendant la pause",
+ html:`<div class="quote"><p>Un ami t'envoie un message : « Tu bosses à l'agence Lambert ? Tu peux me donner l'adresse et le numéro de Mme Leroy ? Je la connais un peu. »</p></div>`,
+ steps:[{q:"Que réponds-tu ?",opts:[
+  ["« Désolé, je n'ai pas le droit de communiquer les coordonnées des clients. »",10,"Exactement : les données des clients sont confidentielles (c'est la loi, le RGPD)."],
+  ["« Je vais demander à ma patronne si je peux. »",5,"Prudent, mais inutile de la déranger : la règle est claire, on ne donne jamais ces informations."],
+  ["« Je te donne juste son numéro, pas l'adresse. »",0,"Un numéro de téléphone est aussi une donnée personnelle protégée."],
+  ["« Si tu la connais, pas de problème. »",0,"Tu ne peux pas vérifier. Et même si c'est vrai, ce n'est pas à toi de décider."]]}]},
+{t:"13:30",tag:"APPEL",cat:"c",title:"Une cliente mécontente",
+ html:`<p>Mme Fontaine, de l'Hôtel du Parc, appelle. Elle est très énervée.</p>`,
+ steps:[
+  {q:"« C'est inadmissible ! Il y a encore des chaises rayées ! » Que réponds-tu ?",opts:[
+   ["« Je comprends votre mécontentement, madame. Pouvez-vous m'expliquer exactement ce qui s'est passé ? »",4,"Tu montres que tu l'écoutes et tu cherches les faits."],
+   ["« Calmez-vous, madame. »",0,"Dire à quelqu'un de se calmer l'énerve encore plus."],
+   ["« Ce n'est pas ma faute, je suis stagiaire. »",0,"Pour la cliente, tu représentes l'entreprise."]]},
+  {q:"Elle explique : sur les 45 chaises livrées vendredi, 2 sont rayées. Que dis-tu ?",opts:[
+   ["« Si je comprends bien, 2 des 45 chaises livrées vendredi sont rayées, c'est bien cela ? »",3,"Reformuler prouve que tu as compris et évite les erreurs."],
+   ["« Vous êtes sûre qu'elles n'ont pas été rayées chez vous ? »",0,"Accuser la cliente ne règle rien, au contraire."],
+   ["« Ah oui, ça arrive souvent. »",0,"Tu donnes une très mauvaise image de l'entreprise."]]},
+  {q:"Comment termines-tu l'appel ?",opts:[
+   ["« Je transmets à M. Lambert pour qu'il organise le remplacement, et je vous confirme par mail avant ce soir. »",3,"Tu proposes une suite concrète, avec un délai que tu peux tenir."],
+   ["« On vous rembourse toute la commande, promis ! »",0,"Ne promets jamais ce que tu n'as pas le pouvoir de décider."],
+   ["« Rappelez demain, le patron sera là. »",1,"C'est à l'entreprise de faire le suivi, pas à la cliente de rappeler."]]}]},
+{t:"14:15",tag:"TÂCHE",cat:"p",title:"Trouver un créneau",
+ html:`<p>Organise une réunion d'une demi-journée la semaine prochaine avec Mme Vandamme, M. Lambert et Tom. Les cases rouges sont occupées.</p>
+ <div class="tablewrap"><table class="t"><thead><tr><th class="l"></th><th>Lun<br>matin</th><th>Lun<br>ap.-m.</th><th>Mar<br>matin</th><th>Mar<br>ap.-m.</th><th>Mer<br>matin</th><th>Mer<br>ap.-m.</th><th>Jeu<br>matin</th><th>Jeu<br>ap.-m.</th><th>Ven<br>matin</th><th>Ven<br>ap.-m.</th></tr></thead><tbody>
+ <tr><th class="l">Mme Vandamme</th><td class="busy">X</td><td></td><td></td><td class="busy">X</td><td class="busy">X</td><td></td><td></td><td class="busy">X</td><td></td><td></td></tr>
+ <tr><th class="l">M. Lambert</th><td></td><td class="busy">X</td><td class="busy">X</td><td></td><td></td><td class="busy">X</td><td></td><td></td><td class="busy">X</td><td></td></tr>
+ <tr><th class="l">Tom</th><td></td><td></td><td></td><td></td><td></td><td></td><td class="busy">X</td><td></td><td></td><td></td></tr>
+ </tbody></table></div>`,
+ steps:[{q:"Quel créneau choisis-tu ?",opts:[
+  ["Vendredi après-midi",10,"C'est le seul moment où les trois colonnes sont libres."],
+  ["Jeudi matin",0,"Tom est occupé le jeudi matin."],
+  ["Lundi matin",0,"Mme Vandamme est occupée le lundi matin."],
+  ["Vendredi matin",0,"M. Lambert est occupé le vendredi matin."]]}]},
+{t:"15:00",tag:"E-MAIL",cat:"p",title:"Un e-mail « urgent »",
+ html:`<div class="mailc"><p><b>De :</b> m.lambert.agence@gmail-pro.co</p><p><b>Objet :</b> URGENT et confidentiel</p><p>Je suis en réunion, je ne peux pas téléphoner. Achète 5 cartes cadeaux de 100 € et envoie-moi les codes par mail. Ne dis rien à Mme Vandamme, c'est une surprise.</p></div>`,
+ steps:[{q:"Que fais-tu ?",opts:[
+  ["Je ne réponds pas, je ne clique sur rien et je préviens Mme Vandamme.",10,"Bien vu, c'est une arnaque classique : adresse bizarre, urgence, secret, cartes cadeaux."],
+  ["Je supprime le mail sans rien dire.",5,"Tu évites le piège, mais il faut prévenir : d'autres collègues l'ont peut-être reçu."],
+  ["Je réponds pour demander si c'est vraiment lui.",3,"Si tu réponds à l'escroc, il dira oui ! On vérifie par un autre moyen, par exemple le téléphone."],
+  ["J'achète les cartes, c'est le patron qui le demande.",0,"C'est une arnaque : l'argent serait perdu."]]}]},
+{t:"15:30",tag:"TÂCHE",cat:"p",title:"Le tableau des ventes",kind:"form",
+ html:`<p>M. Lambert te demande quelques chiffres pour son rapport.</p><div class="tablewrap"><table class="t"><thead><tr><th class="l">Meuble</th><th>Juillet</th><th>Août</th><th>Septembre</th></tr></thead><tbody>
+ <tr><th class="l">Chaises</th><td>34</td><td>18</td><td>45</td></tr><tr><th class="l">Tables</th><td>6</td><td>3</td><td>9</td></tr><tr><th class="l">Bibliothèques</th><td>2</td><td>1</td><td>4</td></tr></tbody></table></div>`,
+ fields:[
+  {label:"Nombre total de tables vendues sur les 3 mois",num:18,pts:4},
+  {label:"Mois où l'agence a vendu le plus de chaises",opts:["Juillet","Août","Septembre"],a:2,pts:3},
+  {label:"Nombre total de meubles vendus en septembre",num:58,pts:3}],
+ fb:"Tables : 6 + 3 + 9 = 18. Chaises : septembre (45). Septembre : 45 + 9 + 4 = 58 meubles."},
+{t:"16:15",tag:"E-MAIL",cat:"c",title:"La relecture",kind:"form",
+ html:`<p>Avant d'envoyer les courriers du jour, vérifie ces phrases. Choisis le bon mot.</p>`,
+ fields:[
+  {label:"La livraison … eu lieu hier.",opts:["a","à"],a:0,pts:2},
+  {label:"Merci de nous renvoyer … documents signés.",opts:["ses","ces"],a:1,pts:2},
+  {label:"Le devis … valable 30 jours.",opts:["et","est"],a:1,pts:2},
+  {label:"Les chaises … livrées demain.",opts:["sont","son"],a:0,pts:2},
+  {label:"Indiquez-nous l'adresse … livrer la table.",opts:["ou","où"],a:1,pts:2}],
+ fb:"Astuces : « a » si on peut dire « avait » ; « est » si on peut dire « était » ; « sont » si on peut dire « étaient » ; « où » indique un lieu ; « ces » = ceux-là."},
+{t:"16:45",tag:"TÂCHE",cat:"p",title:"Avant de partir",kind:"multi",
+ html:`<p>C'est la fin de la journée. Coche tout ce que tu dois faire avant de quitter le bureau, et seulement cela.</p>`,
+ opts:[["Enclencher le répondeur",1],["Ranger les dossiers clients dans l'armoire fermée à clé",1],["Laisser une note pour demain avec les appels à rappeler",1],["Éteindre l'ordinateur",1],["Emporter des dossiers clients chez moi pour avancer",0],["Coller mon mot de passe sur l'écran pour le collègue de demain",0],["Laisser la porte ouverte pour l'équipe de nettoyage",0]],
+ fb:"Les dossiers et les mots de passe ne quittent jamais le bureau et ne restent jamais visibles. La note pour demain assure le suivi."}
+];
+const MAX = 10*EVENTS.length;
+
+/* ---------- État ---------- */
+let S={phase:"start",i:0,scores:[],best:0};
+try{const s=localStorage.getItem(KEY); if(s) S=Object.assign(S,JSON.parse(s));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s), app=$("#app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const fmt=n=>n.toFixed(2).replace(".",",")+" €";
+const r1=n=>Math.round(n*2)/2;
+
+function updateTop(){
+  const show=S.phase==="play"; $("#top").hidden=!show; if(!show) return;
+  const ev=EVENTS[Math.min(S.i,EVENTS.length-1)]; $("#clock").textContent=ev.t;
+  ["c","p"].forEach(cat=>{
+    let got=0,max=0; S.scores.forEach((s,k)=>{ if(EVENTS[k].cat===cat){got+=s;max+=10;} });
+    const pct=max?Math.round(got/max*100):50;
+    $("#f"+cat).style.width=pct+"%"; $("#g"+cat).textContent=max?pct+" %":"–";
+  });
+  $("#dayfill").style.width=(S.scores.length/EVENTS.length*100)+"%";
+}
+function feedback(pts, lines){
+  const cls=pts>=8?"good":pts>=4?"mid":"bad";
+  const head=pts>=8?"Très bien !":pts>=4?"Pas mal, mais il y avait mieux.":"Aïe…";
+  return `<div class="fb ${cls}" role="status"><strong>${head} +${String(pts).replace(".",",")} / 10</strong>${lines.map(l=>`<p>${l}</p>`).join("")}</div>`;
+}
+function nextBtn(box, pts){
+  const b=document.createElement("div"); b.className="actions";
+  b.innerHTML=`<button class="btn" id="next">${S.i+1<EVENTS.length?"Suite de la journée →":"Voir mon évaluation →"}</button>`;
+  box.appendChild(b);
+  $("#next").onclick=()=>{ S.scores[S.i]=pts; S.i++; if(S.i>=EVENTS.length){S.phase="end"; S.best=Math.max(S.best,total());} save(); render(); };
+  $("#next").focus();
+}
+const total=()=>S.scores.reduce((a,b)=>a+b,0);
+
+/* ---------- Rendu des événements ---------- */
+function renderEvent(){
+  const ev=EVENTS[S.i];
+  app.innerHTML=`<article class="card" style="border-left-color:${TAGS[ev.tag]}">
+    <span class="tag" style="background:${TAGS[ev.tag]}">${ev.tag} · ${ev.t}</span>
+    <h2>${ev.title}</h2>${ev.html}<div id="zone"></div></article>
+    <p class="small" style="margin-top:14px">Événement ${S.i+1} sur ${EVENTS.length} · Chaque décision est définitive : lis bien avant de valider.</p>`;
+  const z=$("#zone");
+  if(ev.steps) return stepsEvent(ev,z);
+  if(ev.kind==="multi") return multiEvent(ev,z);
+  if(ev.kind==="form") return formEvent(ev,z);
+  if(ev.kind==="order") return orderEvent(ev,z);
+}
+let lastBest=-1;
+function stepsEvent(ev,z){
+  let k=0, pts=0;
+  const step=()=>{
+    const st=ev.steps[k], max=Math.max(...st.opts.map(o=>o[1]));
+    let opts=shuffle(st.opts), tries=0;
+    while(opts.findIndex(o=>o[1]===max)===lastBest && tries++<20) opts=shuffle(st.opts);
+    lastBest=opts.findIndex(o=>o[1]===max);
+    const w=document.createElement("div");
+    w.innerHTML=`<p><b>${esc(st.q)}</b></p><div class="opts">${opts.map((o,j)=>`<label class="opt"><input type="radio" name="s${k}" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}</div>
+      <div class="actions"><button class="btn" disabled>Valider</button></div>`;
+    z.appendChild(w);
+    const btn=w.querySelector("button");
+    w.querySelectorAll("input").forEach(r=>r.onchange=()=>btn.disabled=false);
+    btn.onclick=()=>{
+      const j=+w.querySelector("input:checked").value, o=opts[j];
+      w.querySelectorAll("input").forEach(r=>r.disabled=true); btn.parentNode.remove();
+      w.querySelectorAll(".opt").forEach((l,x)=>{ if(opts[x][1]===max) l.classList.add("best"); else if(x===j) l.classList.add("picked-bad"); });
+      pts+=o[1]; k++;
+      if(k<ev.steps.length){ const p=document.createElement("p"); p.className="small"; p.textContent=o[2]; w.appendChild(p); step(); }
+      else { z.insertAdjacentHTML("beforeend",feedback(pts,[esc(o[2])].concat(pts<ev.steps.reduce((a,st)=>a+Math.max(...st.opts.map(x=>x[1])),0)?["La meilleure réponse est encadrée en vert."]:[]))); nextBtn(z,pts); }
+    };
+  };
+  step();
+}
+function multiEvent(ev,z){
+  const opts=shuffle(ev.opts), nOk=opts.filter(o=>o[1]).length;
+  z.innerHTML=`<div class="opts">${opts.map((o,j)=>`<label class="opt"><input type="checkbox" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}</div><div class="actions"><button class="btn">Valider</button></div>`;
+  z.querySelector(".btn").onclick=function(){
+    let good=0,bad=0;
+    z.querySelectorAll("input").forEach((c,j)=>{ c.disabled=true; const lab=c.parentNode;
+      if(opts[j][1]) lab.classList.add("best"); if(c.checked){ if(opts[j][1]) good++; else {bad++; lab.classList.add("picked-bad");} } });
+    const pts=Math.max(0,r1(10*(good-bad)/nOk));
+    this.parentNode.remove();
+    z.insertAdjacentHTML("beforeend",feedback(pts,[`${good} bonne(s) réponse(s) cochée(s) sur ${nOk}${bad?`, et ${bad} case(s) cochée(s) à tort`:""}. Les bonnes réponses sont encadrées en vert.`,ev.fb]));
+    nextBtn(z,pts);
+  };
+}
+function formEvent(ev,z){
+  z.innerHTML=ev.fields.map((f,i)=>`<div class="field"><label for="fld${i}">${esc(f.label)}</label>${
+    f.num!==undefined?`<input type="number" id="fld${i}" inputmode="numeric" style="width:140px">`
+    :`<select id="fld${i}"><option value="">— Choisis —</option>${shuffle(f.opts.map((o,j)=>[o,j])).map(([o,j])=>`<option value="${j}">${esc(o)}</option>`).join("")}</select>`}</div>`).join("")
+    +`<div class="actions"><button class="btn">Valider</button></div><p class="small" id="warn"></p>`;
+  z.querySelector(".btn").onclick=function(){
+    const els=ev.fields.map((f,i)=>$("#fld"+i));
+    if(els.some(e=>e.value==="")){ $("#warn").textContent="Réponds à toutes les questions avant de valider."; return; }
+    let pts=0, wrong=[];
+    ev.fields.forEach((f,i)=>{ const e=els[i]; e.disabled=true;
+      const ok = f.num!==undefined ? Number(e.value)===f.num : +e.value===f.a;
+      if(ok){pts+=f.pts; e.style.borderColor="var(--ok)";} else { e.style.borderColor="var(--err)";
+        wrong.push(`« ${f.label} » → ${f.num!==undefined?f.num:f.opts[f.a]}`); } });
+    this.parentNode.remove(); $("#warn").remove();
+    pts=r1(pts);
+    z.insertAdjacentHTML("beforeend",feedback(pts,(wrong.length?["Corrections : "+wrong.join(" ; ")]:[]).concat([ev.fb])));
+    nextBtn(z,pts);
+  };
+}
+function orderEvent(ev,z){
+  z.innerHTML=`<div class="tablewrap"><table class="t"><thead><tr><th class="l">Article</th><th>Prix</th><th>Quantité</th><th>Montant</th></tr></thead><tbody>
+    ${ev.items.map((it,i)=>`<tr><td class="l">${it[0]}</td><td>${fmt(it[1])}</td><td><input type="number" min="0" step="1" value="0" id="q${i}" aria-label="Quantité ${esc(it[0])}" style="width:80px"></td><td id="m${i}">${fmt(0)}</td></tr>`).join("")}
+    </tbody></table></div><p class="total">Total : <span id="tot">0,00 €</span> / 60,00 €</p><div class="actions"><button class="btn">Passer la commande</button></div>`;
+  const qs=()=>ev.items.map((_,i)=>Math.max(0,Math.floor(Number($("#q"+i).value)||0)));
+  const upd=()=>{ const q=qs(); let t=0; q.forEach((n,i)=>{const m=n*ev.items[i][1]; t+=m; $("#m"+i).textContent=fmt(m);}); $("#tot").textContent=fmt(t); $("#tot").style.color=t>60.0001?"var(--err)":""; return t; };
+  z.querySelectorAll("input").forEach(e=>e.oninput=upd);
+  z.querySelector(".btn").onclick=function(){
+    const q=qs(), t=upd(), short=q.some((n,i)=>n<ev.items[i][2]);
+    z.querySelectorAll("input").forEach(e=>e.disabled=true); this.parentNode.remove();
+    let pts, msg;
+    if(t>60.0001){ pts=0; msg=`Budget dépassé (${fmt(t)}) : la commande est refusée par la comptabilité.`; }
+    else if(short){ pts=3; msg="Tu respectes le budget, mais il manque des articles indispensables."; }
+    else { pts=10; msg="Commande parfaite : tous les minimums sont respectés et le budget aussi."; }
+    z.insertAdjacentHTML("beforeend",feedback(pts,[msg,"Les minimums coûtent 18 + 18 + 9,60 + 14 = 59,60 €. Il ne reste que 0,40 € : pas assez pour des stylos. « S'il reste de l'argent » était un piège !"]));
+    nextBtn(z,pts);
+  };
+}
+
+/* ---------- Écrans d'accueil et de fin ---------- */
+function renderStart(){
+  app.innerHTML=`<section class="card hero">
+    <h1>Le jour d'essai</h1>
+    <p>« Bonjour ! Aujourd'hui, tu travailles au secrétariat de l'agence Lambert, de 8 h à 17 h. Je t'observe toute la journée. Ce soir, je déciderai si je t'engage. »</p>
+    <p class="sign">Mme Vandamme, directrice</p></section>
+  <section class="card"><h2>Comment ça marche ?</h2>
+    <ul class="rules-list">
+      <li>La journée compte <b>15 événements</b> : appels, visiteurs, e-mails, tâches à réaliser.</li>
+      <li>Chaque décision rapporte jusqu'à <b>10 points</b>. Tu ne peux <b>pas revenir en arrière</b> : lis bien avant de valider.</li>
+      <li>Après chaque décision, une explication t'aide à comprendre. Lis-la, elle te servira plus tard dans la journée.</li>
+      <li>Deux jauges montrent si les <b>clients</b> sont satisfaits et si la <b>patronne</b> te fait confiance.</li>
+      <li>Objectif : au moins <b>80 %</b> pour décrocher le contrat… et débloquer la mission finale.</li>
+    </ul>
+    ${S.best?`<p class="small" style="margin-top:12px">Ton meilleur score sur ce poste : ${Math.round(S.best/MAX*100)} %</p>`:""}
+    <div class="actions"><button class="btn" id="go">${S.phase==="play"?"Reprendre ma journée":"Commencer la journée"}</button></div></section>`;
+  $("#go").onclick=()=>{ if(S.phase!=="play"){S.phase="play";S.i=0;S.scores=[];} save(); render(); };
+}
+function renderEnd(){
+  const t=total(), pct=Math.round(t/MAX*100);
+  const [stars,title,msg]= pct>=90?["★★★","Engagé(e) avec les félicitations !","« Une journée remarquable. Je t'engage, et je te confie l'accueil dès lundi. »"]
+    : pct>=80?["★★☆","Engagé(e) !","« Très bonne journée. Bienvenue dans l'équipe ! »"]
+    : pct>=60?["★☆☆","Période d'essai prolongée","« C'est prometteur, mais je veux te revoir encore une journée. » Recommence pour atteindre 80 %."]
+    :["☆☆☆","Pas encore…","« Il y a encore du travail. Relis bien les explications et retente ta chance. »"];
+  app.innerHTML=`<section class="card hero"><div class="stars" aria-label="${stars.split("★").length-1} étoiles sur 3">${stars}</div>
+    <h1>${title}</h1><p>${esc(msg)}</p><p><b>Score : ${String(t).replace(".",",")} / ${MAX} (${pct} %)</b></p></section>
+    <section class="card"><h2>Ton bulletin de la journée</h2><table class="recap">${EVENTS.map((e,k)=>`<tr><td>${e.t} · ${e.title}</td><td>${String(S.scores[k]).replace(".",",")} / 10</td></tr>`).join("")}</table>
+    <div class="actions"><button class="btn ${pct>=80?"ghost":""}" id="again">Refaire la journée</button></div>
+    <p class="small">Astuce : les réponses sont mélangées à chaque nouvelle partie.</p></section>
+    ${pct>=80?bonusHtml():`<section class="card"><h2>Mission finale verrouillée</h2><p>Atteins au moins 80 % pour débloquer la dernière mission.</p></section>`}`;
+  $("#again").onclick=()=>{S.phase="play";S.i=0;S.scores=[];save();render();};
+}
+function bonusHtml(){
+  return `<section class="card" style="border-left-color:var(--ok)"><span class="tag" style="background:var(--ok)">MISSION FINALE</span>
+    <h2>La lettre de motivation (dans Word)</h2>
+    <p>Mme Vandamme veut une trace écrite pour ton dossier. Rédige ta lettre de motivation pour le poste de « secrétaire polyvalent(e) » à l'agence Lambert. Coche chaque point quand il est fait :</p>
+    <div class="check">
+      ${["Tes coordonnées en haut à gauche","Les coordonnées de l'agence Lambert (à l'attention de Mme Vandamme) à droite","Lieu et date","Objet : Candidature au poste de secrétaire polyvalent(e)","Formule d'appel adaptée","1er paragraphe : pourquoi cette entreprise","2e paragraphe : tes qualités, avec 2 exemples tirés de ta journée d'essai","3e paragraphe : demande d'entretien","Formule de politesse complète et signature","Une seule page, police sobre, texte justifié, zéro faute"].map(x=>`<label><input type="checkbox"> ${x}</label>`).join("")}
+    </div>
+    <p style="margin-top:14px"><b>Quand tout est coché, lève la main et montre ta lettre au professeur.</b></p></section>`;
+}
+function render(){ updateTop(); if(S.phase==="start") renderStart(); else if(S.phase==="play") renderEvent(); else renderEnd(); window.scrollTo(0,0); }
+
+/* Bouton discret pour l'élève suivant */
+const foot=document.createElement("p"); foot.className="small"; foot.style.cssText="max-width:860px;margin:0 auto;padding:0 18px 40px";
+foot.innerHTML=`Un autre élève doit commencer ? <button class="linkbtn" id="reset">Tout effacer</button>`;
+document.body.appendChild(foot);
+$("#reset").onclick=()=>{ if(!confirm("Effacer la partie en cours et le meilleur score ?")) return; S={phase:"start",i:0,scores:[],best:0}; save(); render(); };
+if(S.phase==="play"){ updateTop(); $("#top").hidden=true; renderStart(); } else render();
+</script>
+</body>
+</html>

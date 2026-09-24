@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seul(e) aux commandes — simulation de secrétariat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F4; --card:#FFFFFF; --ink:#18212B; --muted:#56636F; --line:#CDD5DC;
+  --bar:#16202B; --bar-ink:#F3F5F7; --accent:#E8772E; --accent-ink:#FFFFFF;
+  --ok:#237A4B; --ok-bg:#E3F3E8; --mid:#9A6A00; --mid-bg:#FFF3D6; --err:#B3261E; --err-bg:#FBE6E4;
+  --t-call:#2F6FB0; --t-mail:#7B4FB0; --t-visit:#1F8A70; --t-task:#E8772E; --t-alert:#B3261E;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12181E; --card:#1E2730; --ink:#E6EBEF; --muted:#9AA8B4; --line:#34424E;
+    --bar:#0B1015; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12181E; --card:#1E2730; --ink:#E6EBEF; --muted:#9AA8B4; --line:#34424E;
+  --bar:#0B1015; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 90px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+h1,h2,h3{font-family:"Space Grotesk","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.2;margin:0}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{max-width:860px;margin:0 auto;padding:24px 18px 60px}
+
+/* Barre du haut : horloge + jauges */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar);color:var(--bar-ink);padding:10px 18px}
+.top-in{max-width:860px;margin:0 auto;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.clock{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:34px;letter-spacing:.04em;color:var(--accent)}
+.gauges{display:flex;gap:18px;flex:1;min-width:240px;flex-wrap:wrap}
+.gauge{flex:1;min-width:130px}
+.gauge span{font-size:13px;opacity:.85;display:flex;justify-content:space-between}
+.gauge .track{height:10px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden;margin-top:3px}
+.gauge .fill{height:100%;background:var(--accent);width:50%;transition:width .5s}
+.day{height:4px;background:rgba(255,255,255,.12);margin-top:8px;max-width:860px;margin-left:auto;margin-right:auto}
+.day div{height:100%;background:var(--accent);transition:width .5s}
+
+/* Cartes */
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:24px;margin-top:22px;border-left:6px solid var(--accent)}
+.tag{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.08em;color:#fff;padding:3px 10px;border-radius:3px;margin-bottom:10px}
+.card h2{font-size:26px;margin-bottom:10px}
+.card p{margin:0 0 12px}
+.quote{background:var(--bg);border-left:4px solid var(--line);padding:12px 16px;margin:0 0 16px;border-radius:0 4px 4px 0}
+.quote p{margin:0 0 6px}
+.opts{display:grid;gap:10px;margin:14px 0}
+.opt{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--card);cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:5px;width:18px;height:18px;flex:none}
+.opt.best{border-color:var(--ok);background:var(--ok-bg)}
+.opt.picked-bad{border-color:var(--err)}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;padding:12px 22px;border-radius:5px;font-weight:700;font-size:18px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.fb{margin-top:16px;padding:14px 16px;border-radius:5px}
+.fb.good{background:var(--ok-bg);color:var(--ok)} .fb.mid{background:var(--mid-bg);color:var(--mid)} .fb.bad{background:var(--err-bg);color:var(--err)}
+.fb strong{display:block;font-size:20px;margin-bottom:4px}
+.fb p{margin:4px 0 0;color:var(--ink)}
+.field{display:grid;gap:4px;margin-bottom:14px;max-width:560px}
+.field label{font-weight:700}
+select,input[type=text],input[type=number]{padding:8px 10px;border:2px solid var(--line);border-radius:4px;background:var(--card);max-width:100%}
+.tablewrap{overflow-x:auto;margin:0 0 16px}
+table.t{border-collapse:collapse;font-size:16px;background:var(--card)}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 10px;text-align:center}
+table.t td.l,table.t th.l{text-align:left}
+.busy{background:var(--err-bg);color:var(--err);font-weight:700}
+.total{font-weight:700;font-size:20px;margin-top:8px}
+.mailc{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--bg);font-size:16px}
+.mailc p{margin:0 0 6px}
+
+/* Accueil et fin */
+.hero{background:var(--bar);color:var(--bar-ink);border-radius:6px;padding:30px 28px;border-left:0}
+.hero h1{font-size:36px;margin-bottom:12px}
+.hero p{margin:0 0 12px;max-width:62ch}
+.hero .sign{font-style:italic;opacity:.85}
+.rules-list{margin:10px 0 0;padding-left:22px}
+.rules-list li{margin-bottom:6px}
+.stars{font-size:44px;color:var(--accent);letter-spacing:.1em}
+.recap{width:100%;border-collapse:collapse;font-size:16px;margin-top:10px}
+.recap td{border-bottom:1px solid var(--line);padding:6px 4px}
+.recap td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.check label{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:4px;flex:none}
+.small{font-size:15px;color:var(--muted)}
+.linkbtn{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font-size:15px}
+[hidden]{display:none!important}
+@media (max-width:560px){.clock{font-size:26px}.hero h1{font-size:28px}.card{padding:18px}}
+@media (prefers-reduced-motion:reduce){.gauge .fill,.day div{transition:none}}
+</style>
+</head>
+<body>
+<div class="top" id="top" hidden>
+  <div class="top-in">
+    <div class="clock" id="clock">08:00</div>
+    <div class="gauges">
+      <div class="gauge"><span><b>Clients satisfaits</b><b id="gc">–</b></span><div class="track"><div class="fill" id="fc"></div></div></div>
+      <div class="gauge"><span><b>Confiance de la direction</b><b id="gp">–</b></span><div class="track"><div class="fill" id="fp"></div></div></div>
+    </div>
+  </div>
+  <div class="day"><div id="dayfill" style="width:0"></div></div>
+</div>
+<main id="app"></main>
+
+<p style="max-width:980px;margin:0 auto;padding:0 18px 30px;font-size:16px"><a href="index.html" style="color:inherit;font-weight:700">← Retour à tous les jeux</a></p>
+<script>
+const KEY="journee-type-niveau2";
+const TAGS={APPEL:"var(--t-call)","E-MAIL":"var(--t-mail)",VISITEUR:"var(--t-visit)",TÂCHE:"var(--t-task)",ALERTE:"var(--t-alert)"};
+
+/* ---------- Les 15 événements de la journée ---------- */
+const EVENTS=[
+{t:"07:55",tag:"TÂCHE",cat:"p",title:"Le mot de Mme Vandamme",
+ html:`<p>Sur ton bureau, une note. <b>Recopie l'essentiel sur ta feuille : cette note ne réapparaîtra plus.</b></p>
+ <div class="quote">
+ <p>« Je suis en congé aujourd'hui. Voici ce qu'il faut savoir :</p>
+ <p>• Remise : <b>5 % maximum</b> sans mon accord.</p>
+ <p>• La livraison de M. Moreau est <b>reportée au 20 décembre</b> (retard de notre fournisseur). Il n'est pas encore prévenu.</p>
+ <p>• M. Rossi (Vernis Plus) passe à <b>14 h</b> : rends-lui ses échantillons (carton gris sous mon bureau). <b>Rien d'autre.</b></p>
+ <p>• M. Lambert est en réunion <b>jusqu'à 11 h</b>. Ne le dérange qu'en cas de vraie urgence. »</p></div>`,
+ steps:[{q:"Pour vérifier que tu as bien lu : un client demande 10 % de remise. Que peux-tu faire seul(e) ?",opts:[
+  ["Proposer au maximum 5 %, et transmettre à Mme Vandamme s'il veut davantage.",10,"Exact : tu restes dans ce que tu as le droit de faire, et tu transmets le reste."],
+  ["Accorder 10 % si c'est un bon client.",0,"Non : au-delà de 5 %, il faut l'accord de Mme Vandamme."],
+  ["Refuser toute remise.",4,"Trop strict : tu as le droit d'aller jusqu'à 5 %."],
+  ["Accorder 10 % et prévenir Mme Vandamme ensuite.",0,"On ne décide pas d'abord pour prévenir après."]]}]},
+{t:"08:10",tag:"APPEL",cat:"p",title:"Un appel de la banque",
+ html:`<div class="quote"><p>« Bonjour, ici le service entreprises de votre banque. Un virement de 12 000 € doit être validé par M. Lambert <b>avant 10 h</b>, sinon il sera annulé. »</p></div>`,
+ steps:[{q:"M. Lambert est en réunion. Que fais-tu ?",opts:[
+  ["Je prends le nom du correspondant, je ne donne aucune information, et je glisse une note discrète à M. Lambert : il rappellera la banque à son numéro officiel.",10,"Parfait : le délai est court (c'est une urgence), mais tu restes prudent(e). Une vraie banque ne s'offusque jamais qu'on la rappelle au numéro officiel."],
+  ["J'entre dans la réunion et je lui passe l'appel tout de suite.",4,"Il fallait le prévenir, mais discrètement, et sans lui passer un appel dont on ne sait pas s'il est vrai."],
+  ["Je prends un message pour 11 h, à la fin de sa réunion.",3,"Trop tard : le délai est à 10 h."],
+  ["Je donne le numéro de compte de l'agence pour que la banque vérifie.",0,"Jamais ! Ça ressemble à une arnaque au téléphone. On ne donne aucune donnée bancaire."]]}]},
+{t:"08:30",tag:"E-MAIL",cat:"p",title:"Le tri de la boîte mail",kind:"form",
+ html:`<p>Cinq nouveaux e-mails. Range chacun dans le bon dossier.</p>`,
+ fields:[
+  {label:"« Découvrez nos nouveaux vernis écologiques ! » (newsletter d'un fournisseur)",opts:["À traiter aujourd'hui","À transmettre","À classer","Spam : supprimer"],a:2,pts:2},
+  {label:"« Pourriez-vous m'envoyer un devis pour une table de 8 personnes ? » (nouveau client)",opts:["À traiter aujourd'hui","À transmettre","À classer","Spam : supprimer"],a:0,pts:2},
+  {label:"« Facture n° 9021 – échéance le 30 » (fournisseur habituel)",opts:["À traiter aujourd'hui","À transmettre","À classer","Spam : supprimer"],a:1,pts:2},
+  {label:"« Félicitations, vous avez gagné un iPhone ! Cliquez ici »",opts:["À traiter aujourd'hui","À transmettre","À classer","Spam : supprimer"],a:3,pts:2},
+  {label:"« Candidature spontanée – menuisier » (avec un CV joint)",opts:["À traiter aujourd'hui","À transmettre","À classer","Spam : supprimer"],a:1,pts:2}],
+ fb:"Un nouveau client se traite vite (sinon il va voir ailleurs). La facture va au comptable, la candidature à la direction. La newsletter se classe."},
+{t:"08:50",tag:"VISITEUR",cat:"p",title:"La livraison incomplète",
+ html:`<p>Un livreur dépose des cartons et te tend le bon de livraison : « <b>12 cartons</b> de vernis. Signez ici, je suis pressé. » Tu comptes : il n'y a que <b>10 cartons</b>.</p>`,
+ steps:[{q:"Que fais-tu ?",opts:[
+  ["Je signe en écrivant sur le bon : « 10 cartons reçus sur 12 annoncés », et je garde une copie.",10,"C'est la bonne pratique : signer « avec réserve ». Sans cette mention, l'agence paierait 12 cartons."],
+  ["Je refuse toute la livraison.",3,"Trop radical : les 10 cartons sont là et l'agence en a besoin."],
+  ["Je signe et j'appellerai le fournisseur plus tard.",2,"Une fois signé sans réserve, le bon prouve que tu as tout reçu."],
+  ["Je signe, il est pressé.",0,"L'agence va payer 2 cartons qu'elle n'a jamais reçus."]]}]},
+{t:"09:15",tag:"TÂCHE",cat:"c",title:"Le devis avec remise",kind:"form",
+ html:`<p>Prépare le devis de M. Dubois. Il a droit à <b>5 % de remise sur les meubles uniquement</b> (pas sur la livraison). Calculatrice autorisée, arrondis au centime.</p>
+ <div class="tablewrap"><table class="t"><thead><tr><th class="l">Article</th><th>Quantité</th><th>Prix unitaire</th></tr></thead><tbody>
+ <tr><td class="l">Bibliothèque sur mesure</td><td>1</td><td>1 450,00 €</td></tr>
+ <tr><td class="l">Étagère murale</td><td>4</td><td>65,00 €</td></tr>
+ <tr><td class="l">Livraison</td><td>1</td><td>60,00 €</td></tr></tbody></table></div>`,
+ fields:[
+  {label:"Total des meubles avant remise (€)",num:1710,pts:2},
+  {label:"Remise de 5 % (€)",num:85.5,pts:2},
+  {label:"Total HTVA, livraison comprise (€)",num:1684.5,pts:2},
+  {label:"TVA 21 % (€)",num:353.75,pts:2},
+  {label:"Total TVAC (€)",num:2038.25,pts:2}],
+ fb:"Meubles : 1 450 + 4 × 65 = 1 710 €. Remise : 1 710 × 5 % = 85,50 €. HTVA : 1 710 − 85,50 + 60 = 1 684,50 €. TVA : 353,75 €. TVAC : 2 038,25 €."},
+{t:"09:45",tag:"APPEL",cat:"c",title:"M. Moreau appelle",
+ html:`<p>Relis tes notes avant de répondre.</p>`,
+ steps:[
+  {q:"« Bonjour, je voulais juste confirmer ma livraison du 18 décembre. »",opts:[
+   ["« Justement, j'allais vous appeler. Je suis désolé(e) : la livraison est reportée au 20 décembre, à cause d'un retard de notre fournisseur. »",4,"Tu annonces la mauvaise nouvelle honnêtement, avec la raison."],
+   ["« Oui, c'est bien le 18. »",0,"Faux : la note disait que la livraison était reportée au 20."],
+   ["« Je ne sais pas, rappelez quand Mme Vandamme sera là. »",0,"Tu avais l'information dans tes notes."]]},
+  {q:"« Le 20 ? Ça ne m'arrange pas du tout ! Vous pouvez faire un geste ? »",opts:[
+   ["« Je peux vous proposer une remise de 5 % sur votre bibliothèque. »",3,"C'est le maximum que tu peux accorder seul(e)."],
+   ["« Je vous accorde 10 %, ça vous va ? »",0,"Tu dépasses ce que tu as le droit d'accorder."],
+   ["« Non, désolé(e), ce n'est pas possible. »",1,"Tu avais une marge de 5 % : c'était le moment de l'utiliser."]]},
+  {q:"Comment termines-tu l'appel ?",opts:[
+   ["« Je vous envoie une confirmation écrite par e-mail avant ce soir. »",3,"Une trace écrite protège le client et l'agence. Note bien cette promesse !"],
+   ["« C'est noté, au revoir. »",1,"Rien n'est confirmé par écrit."],
+   ["« Je vous rappellerai peut-être. »",0,"Trop vague pour un client déjà mécontent."]]}]},
+{t:"10:15",tag:"TÂCHE",cat:"p",title:"La feuille Excel",kind:"form",
+ html:`<p>M. Lambert te demande de préparer un modèle de facture dans Excel. Le total HTVA est dans la cellule <b>C3</b>. Le taux de TVA (21 %) est dans la cellule <b>F1</b>.</p>`,
+ fields:[
+  {label:"Quelle formule écris-tu en C4 pour calculer la TVA ?",opts:["=C3*21","=C3*$F$1","=C3/F1","=C3+F1"],a:1,pts:4},
+  {label:"Quelle formule écris-tu en C5 pour le total TVAC ?",opts:["=C3+C4","=SOMME(C3:C5)","=C3*C4","=C4-C3"],a:0,pts:3},
+  {label:"Pourquoi écrire $F$1 plutôt que F1 ?",opts:["Pour afficher le symbole €","Pour que la référence ne bouge pas quand on recopie la formule","Pour mettre la cellule en gras"],a:1,pts:3}],
+ fb:"« =C3*21 » multiplierait par 21, pas par 21 %. Les $ figent la cellule F1 quand on recopie la formule vers le bas. « =SOMME(C3:C5) » en C5 se contient elle-même : c'est une référence circulaire."},
+{t:"10:45",tag:"VISITEUR",cat:"c",title:"Tout le monde en même temps",
+ html:`<p>En même temps arrivent : le <b>facteur</b>, avec une lettre recommandée à signer ; une <b>candidate</b> en avance pour son entretien de 11 h avec M. Lambert ; un <b>client</b> sans rendez-vous qui veut « juste un renseignement ».</p>`,
+ steps:[{q:"Comment t'organises-tu ?",opts:[
+  ["Je salue tout le monde, je signe le recommandé (une minute), j'installe la candidate en salle d'attente, puis je m'occupe du client.",10,"Bon ordre : la tâche la plus rapide d'abord, puis tu installes chacun. Personne n'est ignoré."],
+  ["Je m'occupe du client d'abord : les clients passent avant tout.",3,"Le facteur ne peut pas attendre et la candidate reste debout sans être accueillie."],
+  ["J'accueille la candidate ; le facteur repassera.",4,"Le recommandé repartirait à la poste : quelqu'un devra aller le chercher."],
+  ["Je les laisse s'organiser entre eux.",0,"C'est toi qui gères l'accueil."]]}]},
+{t:"11:15",tag:"TÂCHE",cat:"p",title:"Le procès-verbal",kind:"multi",
+ html:`<p>M. Lambert te dicte ses notes de réunion. Coche uniquement les <b>décisions</b> à inscrire au procès-verbal. Attention aux phrases trompeuses.</p>`,
+ opts:[["Il est décidé de reporter le salon du meuble à janvier.",1],["On pourrait peut-être changer de fournisseur de vernis.",0],["À partir du 1er décembre, le magasin ouvrira le samedi matin.",1],["Tom aimerait bien une nouvelle camionnette.",0],["Le budget publicité est fixé à 2 000 € pour l'année.",1],["M. Lambert rappelle que la réunion a commencé en retard.",0],["Sarah est nommée responsable de l'accueil.",1]],
+ fb:"« On pourrait peut-être » et « aimerait bien » sont des idées, pas des décisions. Une décision est ferme : « il est décidé », « est fixé », « est nommée », « ouvrira »."},
+{t:"11:45",tag:"E-MAIL",cat:"c",title:"L'envoi du devis",
+ html:`<p>Tu dois envoyer le devis n° 2026-112 à Mme Fontaine. M. Lambert veut être informé de l'envoi. Quel e-mail envoies-tu ?</p>`,
+ steps:[{q:"Choisis le bon e-mail :",html:true,opts:[
+  [`<b>À :</b> Mme Fontaine · <b>Cc :</b> M. Lambert<br><b>Objet :</b> Devis n° 2026-112 – 45 chaises<br><b>Pièce jointe :</b> Devis_2026-112.pdf<br>« Madame Fontaine, Vous trouverez ci-joint le devis demandé… Bien à vous »`,10,"Destinataires, objet, pièce jointe et ton : tout est correct."],
+  [`<b>À :</b> Mme Fontaine · <b>Cci :</b> M. Lambert<br><b>Objet :</b> Devis n° 2026-112 – 45 chaises<br><b>Pièce jointe :</b> Devis_2026-112.pdf<br>« Madame Fontaine, Vous trouverez ci-joint le devis demandé… Bien à vous »`,6,"Presque : en Cci, M. Lambert est caché. Rien d'interdit, mais la copie visible (Cc) est plus transparente."],
+  [`<b>À :</b> Mme Fontaine · <b>Cc :</b> M. Lambert<br><b>Objet :</b> Devis<br><b>Pièce jointe :</b> aucune<br>« Madame Fontaine, Vous trouverez ci-joint le devis demandé… Bien à vous »`,2,"Le mail annonce une pièce jointe… qui n'y est pas ! Et l'objet est trop vague."],
+  [`« Répondre à tous » dans la discussion interne où M. Lambert avait écrit : « Attention, cliente difficile, pas de remise. »<br><b>Pièce jointe :</b> Devis_2026-112.pdf`,0,"Catastrophe : la cliente lirait le commentaire interne. Avant « Répondre à tous », on relit toujours tout le fil."]]}]},
+{t:"12:30",tag:"ALERTE",cat:"p",title:"Pendant la pause",
+ html:`<div class="quote"><p>Un collègue : « Tu vas manger ? Donne-moi ton mot de passe, je dois finir un truc sur ton PC, le mien est lent. »</p></div>`,
+ steps:[{q:"Que fais-tu ?",opts:[
+  ["Je refuse gentiment, je verrouille ma session, et je lui conseille d'utiliser son compte ou de prévenir le responsable informatique.",10,"Un mot de passe est strictement personnel : tout ce qui est fait avec ton compte est fait en ton nom."],
+  ["Je ne donne pas le mot de passe, mais je laisse ma session ouverte.",3,"Même résultat qu'un mot de passe donné : n'importe qui peut utiliser ton compte."],
+  ["Je le lui donne et je le changerai demain.",2,"D'ici demain, il peut faire n'importe quoi en ton nom."],
+  ["Je le lui donne : c'est un collègue.",0,"On ne partage jamais son mot de passe, même avec un collègue."]]}]},
+{t:"13:30",tag:"TÂCHE",cat:"p",title:"Le créneau de 2 heures",
+ html:`<p>Trouve un créneau de <b>2 heures d'affilée</b> pour Mme Vandamme (V), M. Lambert (L) et Tom (T). X = occupé. Pause de 12 h à 14 h.</p>
+ <div style="display:flex;gap:16px;flex-wrap:wrap">
+ ${[["Lundi",["V","V","L","L","T",""]],["Mardi",["L","","T","V","","L"]],["Mercredi",["V","","","","L","T"]]].map(([d,b])=>`<div class="tablewrap"><table class="t"><thead><tr><th class="l">${d}</th><th>V</th><th>L</th><th>T</th></tr></thead><tbody>${["9 h","10 h","11 h","14 h","15 h","16 h"].map((h,k)=>`<tr><th class="l">${h}</th>${["V","L","T"].map(p=>b[k]===p?`<td class="busy">X</td>`:"<td></td>").join("")}</tr>`).join("")}</tbody></table></div>`).join("")}
+ </div>`,
+ steps:[{q:"Quel créneau choisis-tu ?",opts:[
+  ["Mercredi de 10 h à 12 h",10,"Oui : à 10 h et à 11 h, personne n'est occupé."],
+  ["Mardi de 10 h à 12 h",0,"Tom est occupé à 11 h."],
+  ["Mercredi de 14 h à 16 h",0,"M. Lambert est occupé à 15 h."],
+  ["Mercredi de 11 h à 15 h",0,"Ce créneau traverse la pause et dure plus de 2 heures."]]}]},
+{t:"14:00",tag:"VISITEUR",cat:"p",title:"La visite de M. Rossi",
+ html:`<div class="quote"><p>« Bonjour, Rossi, de Vernis Plus. Je viens chercher mes échantillons… et le chèque pour notre facture. Mme Vandamme m'a dit que ce serait prêt. »</p></div><p>Relis tes notes.</p>`,
+ steps:[{q:"Que fais-tu ?",opts:[
+  ["Je lui rends ses échantillons. Pour le paiement, je n'ai aucune instruction : je transmets sa demande à Mme Vandamme, qui le recontactera.",10,"Exact : la note disait « rien d'autre ». On ne remet jamais d'argent sans instruction claire."],
+  ["Je lui rends ses échantillons et je demande à M. Lambert de signer un chèque tout de suite.",5,"On n'improvise pas un paiement sans la facture ni l'accord de la personne qui gère le dossier."],
+  ["Je lui dis de revenir quand Mme Vandamme sera là, sans rien lui donner.",3,"Il devait récupérer ses échantillons aujourd'hui : c'était prévu."],
+  ["Je lui rends ses échantillons et je cherche le chèque dans le bureau de Mme Vandamme.",0,"On ne fouille pas le bureau de sa patronne, et rien ne prouve qu'un chèque était prévu."]]}]},
+{t:"14:30",tag:"APPEL",cat:"c",title:"Un message plein de corrections",kind:"form",
+ html:`<div class="quote"><p>« Bonjour, Julie Van den Broeck, de l'école Saint-Joseph. Van den Broeck en trois mots, avec c-k à la fin. Nous voudrions un devis pour 30 bureaux d'élèves… non, finalement 32 : on a deux élèves en plus. Envoyez-le par mail à julie.vdb@sjoseph.be (v-d-b, pas le nom complet). Il nous le faut pour le conseil du jeudi 12, donc idéalement <b>la veille</b>. »</p></div>`,
+ fields:[
+  {label:"Nom de la personne",opts:["Julie Vandenbroek","Julie Van den Broeck","Julie Van den Broek"],a:1,pts:2},
+  {label:"Nombre de bureaux",opts:["30","32","34"],a:1,pts:2},
+  {label:"Adresse e-mail",opts:["julie.vandenbroeck@sjoseph.be","julie.vdb@stjoseph.be","julie.vdb@sjoseph.be"],a:2,pts:2},
+  {label:"Date limite pour envoyer le devis",opts:["Jeudi 12","Mercredi 11","Vendredi 13"],a:1,pts:2},
+  {label:"Objet de la demande",opts:["Un devis pour des bureaux","Une commande de bureaux","Une facture pour des bureaux"],a:0,pts:2}],
+ fb:"Les pièges : le nombre corrigé (32), l'adresse abrégée « vdb » avec « sjoseph », et « la veille » du jeudi 12, soit le mercredi 11. Elle demande un devis, pas une commande."},
+{t:"15:15",tag:"E-MAIL",cat:"p",title:"Nouvelles coordonnées bancaires",
+ html:`<div class="mailc"><p><b>De :</b> compta@boisetco.be</p><p><b>Objet :</b> Changement de compte bancaire</p><p>Bonjour, suite à un changement de banque, merci de payer désormais nos factures sur le compte BE71 0961 2345 6769. Merci de faire le changement aujourd'hui.</p></div>
+ <p class="small">Dans le carnet d'adresses, l'adresse habituelle de ce fournisseur est : compta@bois-et-co.be</p>`,
+ steps:[{q:"Que fais-tu ?",opts:[
+  ["Je ne change rien. Je préviens M. Lambert, et on vérifie en appelant le fournisseur à son numéro habituel.",10,"Bien vu : l'adresse n'est pas la même (il manque les tirets). C'est une fraude au changement de compte, très courante."],
+  ["Je transfère le mail au comptable sans commentaire.",3,"Le comptable pourrait faire le changement sans remarquer le piège. Il fallait signaler le doute."],
+  ["Je réponds au mail pour demander une confirmation.",2,"Le fraudeur confirmera, bien sûr ! On vérifie par un autre canal."],
+  ["Je mets à jour le numéro de compte dans le fichier fournisseurs.",0,"Les prochaines factures seraient payées aux escrocs."]]}]},
+{t:"15:45",tag:"E-MAIL",cat:"c",title:"La relecture difficile",kind:"form",
+ html:`<p>Relis les courriers de l'après-midi. Choisis la bonne orthographe.</p>`,
+ fields:[
+  {label:"Les devis que j'ai … hier sont joints.",opts:["envoyé","envoyés","envoyer"],a:1,pts:2},
+  {label:"… heure vous convient le mieux ?",opts:["Quel","Quelle","Qu'elle"],a:1,pts:2},
+  {label:"Nous … avons envoyé la facture la semaine dernière.",opts:["leur","leurs"],a:0,pts:2},
+  {label:"M. Lambert … vous recevoir jeudi.",opts:["peu","peut","peux"],a:1,pts:2},
+  {label:"Merci de nous faire … votre réponse.",opts:["parvenir","parvenu","parvenue"],a:0,pts:2}],
+ fb:"« Les devis que j'ai envoyés » : avec avoir, on accorde quand le COD (les devis) est placé avant. « Heure » est féminin. « Leur » devant un verbe ne prend jamais de s. « Il peut ». Après « faire », le verbe reste à l'infinitif."},
+{t:"16:15",tag:"TÂCHE",cat:"c",title:"Plus que 30 minutes",
+ html:`<p>Il te reste 30 minutes avant de fermer. Tu ne peux faire qu'<b>une seule</b> de ces tâches aujourd'hui. Relis tes notes.</p>`,
+ steps:[{q:"Laquelle choisis-tu ?",opts:[
+  ["Envoyer à M. Moreau l'e-mail de confirmation promis « avant ce soir ».",10,"Oui : c'est une promesse faite à un client déjà mécontent. Ne pas la tenir ferait perdre toute confiance."],
+  ["Préparer le devis de l'école Saint-Joseph.",3,"Important, mais tu as jusqu'au mercredi 11."],
+  ["Classer les e-mails du matin.",0,"Rien d'urgent."],
+  ["Mettre à jour le modèle de facture Excel.",0,"Aucune date limite."]]}]},
+{t:"16:45",tag:"TÂCHE",cat:"p",title:"La note de passation",kind:"multi",
+ html:`<p>Avant de partir, tu prépares tout pour le retour de Mme Vandamme. Coche tout ce que tu dois faire, et seulement cela.</p>`,
+ opts:[["Lui laisser une note avec : l'appel de la banque, la livraison incomplète, la demande de paiement de M. Rossi et le mail frauduleux",1],["Classer le bon de livraison signé avec réserve dans le dossier du fournisseur",1],["Verrouiller puis éteindre l'ordinateur",1],["Enclencher le répondeur",1],["Effacer les messages du répondeur pour faire de la place",0],["Envoyer le devis Moreau à tous les clients en Cc pour gagner du temps",0],["Laisser les échantillons de M. Rossi sur l'accueil au cas où il repasserait",0]],
+ fb:"La note de passation évite que des informations importantes se perdent. Les messages du répondeur ne s'effacent pas avant d'avoir été traités."}
+];
+const MAX = 10*EVENTS.length;
+
+/* ---------- État ---------- */
+let S={phase:"start",i:0,scores:[],best:0};
+try{const s=localStorage.getItem(KEY); if(s) S=Object.assign(S,JSON.parse(s));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s), app=$("#app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const fmt=n=>n.toFixed(2).replace(".",",")+" €";
+const r1=n=>Math.round(n*2)/2;
+
+function updateTop(){
+  const show=S.phase==="play"; $("#top").hidden=!show; if(!show) return;
+  const ev=EVENTS[Math.min(S.i,EVENTS.length-1)]; $("#clock").textContent=ev.t;
+  ["c","p"].forEach(cat=>{
+    let got=0,max=0; S.scores.forEach((s,k)=>{ if(EVENTS[k].cat===cat){got+=s;max+=10;} });
+    const pct=max?Math.round(got/max*100):50;
+    $("#f"+cat).style.width=pct+"%"; $("#g"+cat).textContent=max?pct+" %":"–";
+  });
+  $("#dayfill").style.width=(S.scores.length/EVENTS.length*100)+"%";
+}
+function feedback(pts, lines){
+  const cls=pts>=8?"good":pts>=4?"mid":"bad";
+  const head=pts>=8?"Très bien !":pts>=4?"Pas mal, mais il y avait mieux.":"Aïe…";
+  return `<div class="fb ${cls}" role="status"><strong>${head} +${String(pts).replace(".",",")} / 10</strong>${lines.map(l=>`<p>${l}</p>`).join("")}</div>`;
+}
+function nextBtn(box, pts){
+  const b=document.createElement("div"); b.className="actions";
+  b.innerHTML=`<button class="btn" id="next">${S.i+1<EVENTS.length?"Suite de la journée →":"Voir mon évaluation →"}</button>`;
+  box.appendChild(b);
+  $("#next").onclick=()=>{ S.scores[S.i]=pts; S.i++; if(S.i>=EVENTS.length){S.phase="end"; S.best=Math.max(S.best,total());} save(); render(); };
+  $("#next").focus();
+}
+const total=()=>S.scores.reduce((a,b)=>a+b,0);
+
+/* ---------- Rendu des événements ---------- */
+function renderEvent(){
+  const ev=EVENTS[S.i];
+  app.innerHTML=`<article class="card" style="border-left-color:${TAGS[ev.tag]}">
+    <span class="tag" style="background:${TAGS[ev.tag]}">${ev.tag} · ${ev.t}</span>
+    <h2>${ev.title}</h2>${ev.html}<div id="zone"></div></article>
+    <p class="small" style="margin-top:14px">Événement ${S.i+1} sur ${EVENTS.length} · Chaque décision est définitive : lis bien avant de valider.</p>`;
+  const z=$("#zone");
+  if(ev.steps) return stepsEvent(ev,z);
+  if(ev.kind==="multi") return multiEvent(ev,z);
+  if(ev.kind==="form") return formEvent(ev,z);
+  if(ev.kind==="order") return orderEvent(ev,z);
+}
+let lastBest=-1;
+function stepsEvent(ev,z){
+  let k=0, pts=0;
+  const step=()=>{
+    const st=ev.steps[k], max=Math.max(...st.opts.map(o=>o[1]));
+    let opts=shuffle(st.opts), tries=0;
+    while(opts.findIndex(o=>o[1]===max)===lastBest && tries++<20) opts=shuffle(st.opts);
+    lastBest=opts.findIndex(o=>o[1]===max);
+    const w=document.createElement("div");
+    w.innerHTML=`<p><b>${esc(st.q)}</b></p><div class="opts">${opts.map((o,j)=>`<label class="opt"><input type="radio" name="s${k}" value="${j}"><span>${st.html?o[0]:esc(o[0])}</span></label>`).join("")}</div>
+      <div class="actions"><button class="btn" disabled>Valider</button></div>`;
+    z.appendChild(w);
+    const btn=w.querySelector("button");
+    w.querySelectorAll("input").forEach(r=>r.onchange=()=>btn.disabled=false);
+    btn.onclick=()=>{
+      const j=+w.querySelector("input:checked").value, o=opts[j];
+      w.querySelectorAll("input").forEach(r=>r.disabled=true); btn.parentNode.remove();
+      w.querySelectorAll(".opt").forEach((l,x)=>{ if(opts[x][1]===max) l.classList.add("best"); else if(x===j) l.classList.add("picked-bad"); });
+      pts+=o[1]; k++;
+      if(k<ev.steps.length){ const p=document.createElement("p"); p.className="small"; p.textContent=o[2]; w.appendChild(p); step(); }
+      else { z.insertAdjacentHTML("beforeend",feedback(pts,[esc(o[2])].concat(pts<ev.steps.reduce((a,st)=>a+Math.max(...st.opts.map(x=>x[1])),0)?["La meilleure réponse est encadrée en vert."]:[]))); nextBtn(z,pts); }
+    };
+  };
+  step();
+}
+function multiEvent(ev,z){
+  const opts=shuffle(ev.opts), nOk=opts.filter(o=>o[1]).length;
+  z.innerHTML=`<div class="opts">${opts.map((o,j)=>`<label class="opt"><input type="checkbox" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}</div><div class="actions"><button class="btn">Valider</button></div>`;
+  z.querySelector(".btn").onclick=function(){
+    let good=0,bad=0;
+    z.querySelectorAll("input").forEach((c,j)=>{ c.disabled=true; const lab=c.parentNode;
+      if(opts[j][1]) lab.classList.add("best"); if(c.checked){ if(opts[j][1]) good++; else {bad++; lab.classList.add("picked-bad");} } });
+    const pts=Math.max(0,r1(10*(good-bad)/nOk));
+    this.parentNode.remove();
+    z.insertAdjacentHTML("beforeend",feedback(pts,[`${good} bonne(s) réponse(s) cochée(s) sur ${nOk}${bad?`, et ${bad} case(s) cochée(s) à tort`:""}. Les bonnes réponses sont encadrées en vert.`,ev.fb]));
+    nextBtn(z,pts);
+  };
+}
+function formEvent(ev,z){
+  z.innerHTML=ev.fields.map((f,i)=>`<div class="field"><label for="fld${i}">${esc(f.label)}</label>${
+    f.num!==undefined?`<input type="text" id="fld${i}" inputmode="decimal" style="width:160px">`
+    :`<select id="fld${i}"><option value="">— Choisis —</option>${shuffle(f.opts.map((o,j)=>[o,j])).map(([o,j])=>`<option value="${j}">${esc(o)}</option>`).join("")}</select>`}</div>`).join("")
+    +`<div class="actions"><button class="btn">Valider</button></div><p class="small" id="warn"></p>`;
+  z.querySelector(".btn").onclick=function(){
+    const els=ev.fields.map((f,i)=>$("#fld"+i));
+    if(els.some(e=>e.value==="")){ $("#warn").textContent="Réponds à toutes les questions avant de valider."; return; }
+    let pts=0, wrong=[];
+    ev.fields.forEach((f,i)=>{ const e=els[i]; e.disabled=true;
+      const ok = f.num!==undefined ? Math.abs(parseFloat(String(e.value).replace(/\s|€/g,"").replace(",","."))-f.num)<0.011 : +e.value===f.a;
+      if(ok){pts+=f.pts; e.style.borderColor="var(--ok)";} else { e.style.borderColor="var(--err)";
+        wrong.push(`« ${f.label} » → ${f.num!==undefined?String(f.num).replace(".",","):f.opts[f.a]}`); } });
+    this.parentNode.remove(); $("#warn").remove();
+    pts=r1(pts);
+    z.insertAdjacentHTML("beforeend",feedback(pts,(wrong.length?["Corrections : "+wrong.join(" ; ")]:[]).concat([ev.fb])));
+    nextBtn(z,pts);
+  };
+}
+function orderEvent(ev,z){
+  z.innerHTML=`<div class="tablewrap"><table class="t"><thead><tr><th class="l">Article</th><th>Prix</th><th>Quantité</th><th>Montant</th></tr></thead><tbody>
+    ${ev.items.map((it,i)=>`<tr><td class="l">${it[0]}</td><td>${fmt(it[1])}</td><td><input type="number" min="0" step="1" value="0" id="q${i}" aria-label="Quantité ${esc(it[0])}" style="width:80px"></td><td id="m${i}">${fmt(0)}</td></tr>`).join("")}
+    </tbody></table></div><p class="total">Total : <span id="tot">0,00 €</span> / 60,00 €</p><div class="actions"><button class="btn">Passer la commande</button></div>`;
+  const qs=()=>ev.items.map((_,i)=>Math.max(0,Math.floor(Number($("#q"+i).value)||0)));
+  const upd=()=>{ const q=qs(); let t=0; q.forEach((n,i)=>{const m=n*ev.items[i][1]; t+=m; $("#m"+i).textContent=fmt(m);}); $("#tot").textContent=fmt(t); $("#tot").style.color=t>60.0001?"var(--err)":""; return t; };
+  z.querySelectorAll("input").forEach(e=>e.oninput=upd);
+  z.querySelector(".btn").onclick=function(){
+    const q=qs(), t=upd(), short=q.some((n,i)=>n<ev.items[i][2]);
+    z.querySelectorAll("input").forEach(e=>e.disabled=true); this.parentNode.remove();
+    let pts, msg;
+    if(t>60.0001){ pts=0; msg=`Budget dépassé (${fmt(t)}) : la commande est refusée par la comptabilité.`; }
+    else if(short){ pts=3; msg="Tu respectes le budget, mais il manque des articles indispensables."; }
+    else { pts=10; msg="Commande parfaite : tous les minimums sont respectés et le budget aussi."; }
+    z.insertAdjacentHTML("beforeend",feedback(pts,[msg,"Les minimums coûtent 18 + 18 + 9,60 + 14 = 59,60 €. Il ne reste que 0,40 € : pas assez pour des stylos. « S'il reste de l'argent » était un piège !"]));
+    nextBtn(z,pts);
+  };
+}
+
+/* ---------- Écrans d'accueil et de fin ---------- */
+function renderStart(){
+  app.innerHTML=`<section class="card hero">
+    <h1>Seul(e) aux commandes</h1>
+    <p>« Ta journée d'essai s'est bien passée : tu fais maintenant partie de l'équipe. Aujourd'hui, je suis en congé et M. Lambert est en réunion toute la matinée. Tu gères le secrétariat seul(e). »</p>
+    <p class="sign">Mme Vandamme, directrice</p></section>
+  <section class="card"><h2>Niveau 2 : ce qui change</h2>
+    <ul class="rules-list">
+      <li><b>Prends une feuille et un bic.</b> Certaines informations ne sont données qu'une seule fois, et tu en auras besoin plus tard dans la journée.</li>
+      <li>La journée compte <b>18 événements</b>, avec plus de pièges et plus de calculs. Calculatrice autorisée.</li>
+      <li>Plusieurs réponses semblent bonnes : cherche la <b>plus professionnelle</b>.</li>
+      <li>Pas de retour en arrière. Lis chaque explication : elle te servira.</li>
+      <li>Objectif : au moins <b>80 %</b> pour réussir ta journée et débloquer la mission finale.</li>
+    </ul>
+    ${S.best?`<p class="small" style="margin-top:12px">Ton meilleur score sur ce poste : ${Math.round(S.best/MAX*100)} %</p>`:""}
+    <div class="actions"><button class="btn" id="go">${S.phase==="play"?"Reprendre ma journée":"Commencer la journée"}</button></div></section>`;
+  $("#go").onclick=()=>{ if(S.phase!=="play"){S.phase="play";S.i=0;S.scores=[];} save(); render(); };
+}
+function renderEnd(){
+  const t=total(), pct=Math.round(t/MAX*100);
+  const [stars,title,msg]= pct>=90?["★★★","Journée remarquable !","« Rien ne t'a échappé. Je te confie les nouveaux stagiaires dès la semaine prochaine. »"]
+    : pct>=80?["★★☆","Journée réussie !","« Je peux partir en congé tranquille : l'agence est entre de bonnes mains. »"]
+    : pct>=60?["★☆☆","Quelques couacs","« Il y a eu quelques oublis aujourd'hui. » Recommence pour atteindre 80 %."]
+    :["☆☆☆","Journée difficile…","« Relis bien tes notes et les explications, puis retente ta chance. »"];
+  app.innerHTML=`<section class="card hero"><div class="stars" aria-label="${stars.split("★").length-1} étoiles sur 3">${stars}</div>
+    <h1>${title}</h1><p>${esc(msg)}</p><p><b>Score : ${String(t).replace(".",",")} / ${MAX} (${pct} %)</b></p></section>
+    <section class="card"><h2>Ton bulletin de la journée</h2><table class="recap">${EVENTS.map((e,k)=>`<tr><td>${e.t} · ${e.title}</td><td>${String(S.scores[k]).replace(".",",")} / 10</td></tr>`).join("")}</table>
+    <div class="actions"><button class="btn ${pct>=80?"ghost":""}" id="again">Refaire la journée</button></div>
+    <p class="small">Astuce : les réponses sont mélangées à chaque nouvelle partie.</p></section>
+    ${pct>=80?bonusHtml():`<section class="card"><h2>Mission finale verrouillée</h2><p>Atteins au moins 80 % pour débloquer la dernière mission.</p></section>`}`;
+  $("#again").onclick=()=>{S.phase="play";S.i=0;S.scores=[];save();render();};
+}
+function bonusHtml(){
+  return `<section class="card" style="border-left-color:var(--ok)"><span class="tag" style="background:var(--ok)">MISSION FINALE</span>
+    <h2>La note de passation et l'e-mail promis (dans Word)</h2>
+    <p>Avec tes notes de la journée, rédige deux documents dans le même fichier Word. Coche chaque point quand il est fait :</p>
+    <div class="check">
+      ${["Page 1 : une note de passation pour Mme Vandamme, avec un titre, la date et ton nom","Elle résume au moins 5 événements importants de la journée","Chaque point indique ce qui a été fait ET ce qui reste à faire","Les points urgents sont mis en évidence (gras ou couleur)","Présentation en liste à puces ou en tableau","Page 2 : l'e-mail de confirmation à M. Moreau (nouvelle date, remise accordée)","Objet précis, formule d'appel, formule de politesse, signature","Relu deux fois : zéro faute"].map(x=>`<label><input type="checkbox"> ${x}</label>`).join("")}
+    </div>
+    <p style="margin-top:14px"><b>Quand tout est coché, lève la main et montre ton document au professeur.</b></p></section>`;
+}
+function render(){ updateTop(); if(S.phase==="start") renderStart(); else if(S.phase==="play") renderEvent(); else renderEnd(); window.scrollTo(0,0); }
+
+/* Bouton discret pour l'élève suivant */
+const foot=document.createElement("p"); foot.className="small"; foot.style.cssText="max-width:860px;margin:0 auto;padding:0 18px 40px";
+foot.innerHTML=`Un autre élève doit commencer ? <button class="linkbtn" id="reset">Tout effacer</button>`;
+document.body.appendChild(foot);
+$("#reset").onclick=()=>{ if(!confirm("Effacer la partie en cours et le meilleur score ?")) return; S={phase:"start",i:0,scores:[],best:0}; save(); render(); };
+if(S.phase==="play"){ updateTop(); $("#top").hidden=true; renderStart(); } else render();
+</script>
+</body>
+</html>
