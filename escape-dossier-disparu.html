@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le dossier disparu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#DCE4E8; --ink:#1E2A36; --muted:#51606E; --paper:#FFFFFF; --line:#C3CED6;
+  --postit:#F6B9C9; --postit-ink:#2B2410; --ok:#237A4B; --ok-bg:#E3F3E8; --err:#B3261E; --err-bg:#FBE6E4;
+  --blue:#2F5D8A; --sel:#FFE9A8;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#1A2229; --ink:#E4EAEF; --muted:#9AA9B5; --paper:#25303A; --line:#3A4854;
+    --postit:#D98FA5; --ok:#5CC48A; --ok-bg:#1D3A2A; --err:#F08A80; --err-bg:#43221F; --blue:#8DB6DE; --sel:#5A4A1A;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#1A2229; --ink:#E4EAEF; --muted:#9AA9B5; --paper:#25303A; --line:#3A4854;
+  --postit:#D98FA5; --ok:#5CC48A; --ok-bg:#1D3A2A; --err:#F08A80; --err-bg:#43221F; --blue:#8DB6DE; --sel:#5A4A1A;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+main{max-width:980px;margin:0 auto;padding:28px 18px 60px}
+h1,h2,h3{line-height:1.2;margin:0}
+.hand{font-family:"Kalam","Comic Sans MS",cursive}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* Intro : le mot laissé sur le bureau */
+.intro{background:var(--postit);color:var(--postit-ink);padding:22px 26px 24px;max-width:640px;transform:rotate(-1deg);box-shadow:0 2px 0 rgba(0,0,0,.08),0 12px 24px -12px rgba(0,0,0,.35)}
+.intro .when{margin:0 0 4px;font-size:17px}
+.intro h1{font-family:"Kalam",cursive;font-size:34px;font-weight:700}
+.intro p{margin:10px 0 0;font-size:19px}
+.intro .sign{text-align:right;font-family:"Kalam",cursive;font-size:22px;margin-top:6px}
+
+/* Le tableau des post-its */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:26px;margin:40px 0 36px}
+.task{position:relative;text-align:left;border:0;background:var(--postit);color:var(--postit-ink);min-height:170px;padding:16px 16px 18px;box-shadow:0 2px 0 rgba(0,0,0,.08),0 10px 18px -10px rgba(0,0,0,.35);transition:transform .15s}
+.task:nth-child(odd){transform:rotate(1.2deg)} .task:nth-child(even){transform:rotate(-1.4deg)}
+.task:hover{transform:rotate(0) translateY(-3px)}
+.task .num{font-family:"Kalam",cursive;font-size:18px;opacity:.75}
+.task h3{font-family:"Kalam",cursive;font-size:26px;margin:2px 0 6px}
+.task p{margin:0;font-size:16px}
+
+.stamp{position:absolute;right:10px;bottom:10px;border:3px solid #237A4B;color:#237A4B;font-weight:700;padding:2px 10px;transform:rotate(-10deg);font-size:18px;letter-spacing:.04em;background:rgba(255,255,255,.5)}
+
+/* Le tiroir (code) */
+.drawer{background:var(--paper);border:1px solid var(--line);padding:22px;border-radius:4px}
+.drawer h2{font-size:24px}
+.drawer p{margin:6px 0 16px;color:var(--muted)}
+.slots{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.slot{width:56px;height:68px;border:2px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:4px}
+.slot b{font-size:30px;line-height:1}
+.slot small{font-size:12px;color:var(--muted)}
+.slot.filled{border-style:solid;border-color:var(--ok);background:var(--ok-bg)}
+.coderow{display:flex;gap:10px;flex-wrap:wrap}
+.coderow input{padding:10px 12px;border:2px solid var(--line);border-radius:4px;background:var(--paper);text-transform:uppercase;letter-spacing:.2em;width:220px;max-width:100%}
+
+/* Panneau de mission */
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:24px;margin:30px 0}
+.panel .back{background:none;border:0;padding:0;color:var(--blue);text-decoration:underline;margin-bottom:14px}
+.panel h2{font-family:"Kalam",cursive;font-size:32px}
+.panel .consigne{margin:8px 0 20px;max-width:70ch}
+.btn{background:var(--blue);color:#fff;border:0;padding:11px 20px;border-radius:4px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.feedback{margin-top:16px;padding:12px 16px;border-radius:4px;display:none}
+.feedback.ok{display:block;background:var(--ok-bg);color:var(--ok);font-weight:700}
+.feedback.err{display:block;background:var(--err-bg);color:var(--err)}
+
+/* Documents */
+.docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.doc{border:1px solid var(--line);padding:14px;border-radius:4px;background:var(--desk)}
+.doc p{margin:0 0 10px;font-size:16px}
+select{padding:8px 10px;border:2px solid var(--line);border-radius:4px;background:var(--paper);max-width:100%}
+.good{border-color:var(--ok)!important} .bad{border-color:var(--err)!important}
+
+/* Lettre */
+.letter{background:var(--paper);border:1px solid var(--line);padding:24px 28px;max-width:640px;font-family:Georgia,"Times New Roman",serif;line-height:1.9;box-shadow:0 8px 20px -14px rgba(0,0,0,.4)}
+.letter p{margin:0 0 12px}
+.w{cursor:pointer;border-radius:3px;padding:1px 2px}
+.w:hover{background:var(--sel)}
+.w.on{background:var(--postit);color:var(--postit-ink);text-decoration:line-through}
+.w.fixed{background:var(--ok-bg);color:var(--ok);text-decoration:none;font-weight:700}
+
+/* Agenda */
+.rules{display:grid;gap:10px;margin-bottom:20px}
+.rule{background:var(--postit);color:var(--postit-ink);padding:10px 14px;font-family:"Kalam",cursive;font-size:19px;max-width:560px}
+.rdv{display:grid;grid-template-columns:minmax(160px,240px) 1fr;gap:10px 16px;align-items:center;max-width:560px}
+
+/* Téléphone */
+.transcript{background:var(--desk);border-left:4px solid var(--blue);padding:14px 18px;margin-bottom:20px;max-width:640px}
+.transcript p{margin:0 0 8px}
+.form{display:grid;gap:14px;max-width:560px}
+.form label{display:grid;gap:4px;font-weight:700}
+
+/* Classement */
+.files{list-style:none;padding:0;margin:0;max-width:460px;display:grid;gap:8px}
+.files li{display:flex;align-items:center;gap:10px;background:var(--desk);border:1px solid var(--line);padding:8px 10px;border-radius:4px}
+.files li span{flex:1;font-weight:700}
+.files button{border:1px solid var(--line);background:var(--paper);width:40px;height:36px;border-radius:4px}
+
+/* Quiz */
+.q{margin-bottom:18px;max-width:640px}
+.q p{margin:0 0 6px;font-weight:700}
+.q label{display:block;padding:4px 0;font-weight:400}
+
+/* Bonus */
+.bonus{background:var(--paper);border:3px solid var(--ok);padding:24px;border-radius:4px;margin-top:30px}
+.bonus h2{font-family:"Kalam",cursive;font-size:32px;color:var(--ok)}
+.check label{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:4px;flex:none}
+.reset{margin-top:40px;font-size:15px;color:var(--muted)}
+.reset button{background:none;border:0;color:var(--muted);text-decoration:underline;padding:0}
+[hidden]{display:none!important}
+@media (max-width:560px){.rdv{grid-template-columns:1fr}.intro h1{font-size:28px}}
+@media (prefers-reduced-motion:reduce){.task{transition:none}}
+</style>
+<style>
+.invoice{border-collapse:collapse;width:100%;max-width:640px;background:var(--paper);font-size:16px}
+.invoice th,.invoice td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+.invoice td.n,.invoice th.n{text-align:right}
+.inv-wrap{overflow-x:auto;margin-bottom:20px}
+.form input[type=text]{padding:8px 10px;border:2px solid var(--line);border-radius:4px;background:var(--paper);max-width:200px}
+.mailbox{background:var(--paper);border:1px solid var(--line);padding:20px 24px;max-width:680px;line-height:2.3}
+.mailbox select{padding:4px 8px;margin:0 2px}
+.level{display:inline-block;background:var(--ink);color:var(--paper);font-size:14px;padding:2px 10px;border-radius:20px;margin-top:10px}
+.task.done{background:#F3DDE4}
+</style>
+</head>
+<body>
+<main>
+  <header class="intro">
+    <p class="when hand">Vendredi, 13h30</p>
+    <h1>Le dossier de l'Hôtel du Parc a disparu !</h1>
+    <p>Le contrat pour les 45 chaises est introuvable, et je dois le remettre à la cliente <b>à 17 h</b>. Tu es la personne la plus organisée de l'agence : mène l'enquête. Chaque piste résolue te donne une lettre.</p>
+    <p><b>Attention :</b> les lettres arrivent dans le désordre. Pour ouvrir le dernier casier, tu devras les remettre dans le bon ordre et retrouver un mot du secrétariat. Et les indices n'apparaissent qu'à partir de la 2e erreur.</p>
+    <p class="sign">M. Lambert</p>
+    <span class="level">Niveau 3</span>
+  </header>
+
+  <section class="board" id="board" aria-label="Les pistes"></section>
+  <section class="panel" id="panel" hidden></section>
+
+  <section class="drawer" id="drawer">
+    <h2>Le casier fermé</h2>
+    <p>Les lettres gagnées s'affichent ici, mais elles sont mélangées. Remets-les dans l'ordre pour former un mot en rapport avec le secrétariat.</p>
+    <div class="slots" id="slots"></div>
+    <div class="coderow">
+      <input id="code" maxlength="8" aria-label="Mot de passe du casier" placeholder="Le mot">
+      <button class="btn" id="open">Ouvrir le casier</button>
+    </div>
+    <div class="feedback" id="codefb"></div>
+  </section>
+
+  <section class="bonus" id="bonus" hidden></section>
+
+  <p class="reset">Un autre élève doit commencer ? <button id="reset">Tout recommencer</button></p>
+</main>
+
+<p style="max-width:980px;margin:0 auto;padding:0 18px 30px;font-size:16px"><a href="index.html" style="color:inherit;font-weight:700">← Retour à tous les jeux</a></p>
+<script>
+const CODE = ["R","I","C","E","O","R","U","R"];
+const WORD = "COURRIER";
+const KEY = "escape-secretariat-v4";
+let state = {done:{}, open:false, codeTries:0};
+try{ const s = localStorage.getItem(KEY); if(s) state = Object.assign(state, JSON.parse(s)); }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
+function fb(el, ok, msg){ el.className = "feedback " + (ok?"ok":"err"); el.textContent = msg; }
+function num(v){ const x=parseFloat(String(v).replace(/\s|€/g,"").replace(",", ".")); return isNaN(x)?null:x; }
+let tries = 0;
+function fail(msg, hint){ tries++; fb($("#f"), false, tries>=2 && hint ? `${msg} Indice : ${hint}` : `${msg} Relis bien et réessaie.`); }
+function checkBtn(){ return `<div class="actions"><button class="btn" id="chk">Vérifier</button></div><div class="feedback" id="f"></div>`; }
+
+function matchMission(box, win, items, cats, hint, cardHtml){
+  const list = shuffle(items);
+  const opts = '<option value="">— Choisis —</option>' + shuffle(cats).map(t=>`<option>${esc(t)}</option>`).join("");
+  box.innerHTML = `<div class="docs">${list.map((d,i)=>`<div class="doc">${cardHtml(d)}<select data-i="${i}" aria-label="Réponse ${i+1}">${opts}</select></div>`).join("")}</div>${checkBtn()}`;
+  $("#chk").onclick = ()=>{
+    let wrong=0, empty=0;
+    box.querySelectorAll("select").forEach(s=>{ if(!s.value) empty++; else if(s.value!==list[s.dataset.i].a) wrong++; });
+    if(empty) return fb($("#f"),false,`Il reste ${empty} réponse(s) à choisir.`);
+    if(wrong) return fail(`${wrong} réponse(s) incorrecte(s).`, hint);
+    win();
+  };
+}
+function orderMission(box, win, start, answer, hint){
+  let list = start.slice();
+  const draw=()=>{
+    box.querySelector(".files").innerHTML=list.map((n,i)=>`<li><span>${esc(n)}</span>
+      <button data-m="${i}" data-d="-1" aria-label="Monter" ${i===0?"disabled":""}>▲</button>
+      <button data-m="${i}" data-d="1" aria-label="Descendre" ${i===list.length-1?"disabled":""}>▼</button></li>`).join("");
+    box.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
+      const i=+b.dataset.m,j=i+ +b.dataset.d; [list[i],list[j]]=[list[j],list[i]]; draw();
+      const nb=box.querySelector(`[data-m="${j}"][data-d="${b.dataset.d}"]`)||box.querySelector(`[data-m="${j}"]`); if(nb) nb.focus();
+    });
+  };
+  box.innerHTML=`<ul class="files"></ul>${checkBtn()}`;
+  draw();
+  $("#chk").onclick=()=>{
+    const wrong=list.filter((n,i)=>n!==answer[i]).length;
+    if(wrong) return fail(`${wrong} élément(s) mal placé(s).`, hint);
+    win();
+  };
+}
+/* Formulaire : chaque ligne a ses propres choix (opts + a) ou attend un nombre (num) */
+function formMission(box, win, rows, hint, intro, unique){
+  box.innerHTML=`${intro||""}<div class="form">${rows.map((r,i)=>`<label>${esc(r.label)}${
+    r.num!==undefined?`<input type="text" data-i="${i}" inputmode="decimal">`
+    :`<select data-i="${i}"><option value="">— Choisis —</option>${shuffle(r.opts.map((o,j)=>[o,j])).map(([o,j])=>`<option value="${j}">${esc(o)}</option>`).join("")}</select>`}</label>`).join("")}</div>${checkBtn()}`;
+  $("#chk").onclick=()=>{
+    const els=[...box.querySelectorAll("[data-i]")];
+    if(els.some(e=>e.value.trim()==="")) return fb($("#f"),false,"Complète toutes les lignes.");
+    if(unique && new Set(els.map(e=>e.value)).size<els.length) return fb($("#f"),false,unique);
+    const wrong=els.filter(e=>{ const r=rows[e.dataset.i];
+      if(r.num!==undefined){ const v=num(e.value); return v===null || Math.abs(v-r.num)>0.011; }
+      return +e.value!==r.a; }).length;
+    if(wrong) return fail(`${wrong} réponse(s) incorrecte(s).`, hint);
+    win();
+  };
+}
+
+const missions = [
+{
+  id:"enquete", title:"Qui l'a eu en dernier ?", teaser:"Quatre collègues ont consulté le dossier cette semaine.",
+  consigne:"Du lundi au jeudi, chaque jour, une seule personne a consulté le dossier. Retrouve qui l'avait chaque jour. Un brouillon t'aidera.",
+  render(box, win){
+    const days=["Lundi","Mardi","Mercredi","Jeudi"];
+    formMission(box, win, [
+      {label:"Tom",opts:days,a:0},{label:"Lucas",opts:days,a:1},{label:"Sarah",opts:days,a:2},{label:"Nadia",opts:days,a:3}],
+      "essaie les jours possibles pour Tom : s'il le prend mardi ou mercredi, que devient Sarah ?",
+      `<div class="rules">
+        <div class="rule">Nadia ne travaille ni le lundi ni le mardi.</div>
+        <div class="rule">Tom a consulté le dossier avant Sarah.</div>
+        <div class="rule">Lucas l'a eu le lendemain de Tom.</div>
+        <div class="rule">Sarah ne l'a pas eu le jeudi.</div></div>`,
+      "Deux personnes ont le même jour : une seule personne par jour.");
+  }
+},
+{
+  id:"appels", title:"Le journal des appels", teaser:"Le téléphone garde la trace de tout.",
+  consigne:"Analyse le journal des appels de la semaine et réponds aux questions.",
+  render(box, win){
+    const calls=[["Lundi","09 h 10","Hôtel du Parc (Mme Fontaine)","Contrat des chaises","6 min"],["Lundi","11 h 30","M. Moreau","Devis bibliothèque","4 min"],["Mardi","08 h 45","Hôtel du Parc (Mme Fontaine)","Date de livraison","3 min"],["Mardi","14 h 20","Bois & Co","Facture","7 min"],["Mercredi","10 h 05","M. Moreau","Modification du devis","9 min"],["Mercredi","16 h 40","Hôtel du Parc (direction)","Signature du contrat","5 min"],["Jeudi","09 h 15","Garage Dumont","Camionnette","2 min"]];
+    formMission(box, win, [
+      {label:"Combien d'appels l'Hôtel du Parc a-t-il passés cette semaine ?",num:3},
+      {label:"Durée totale des appels de M. Moreau (en minutes)",num:13},
+      {label:"Quel jour a eu lieu le dernier appel au sujet du contrat ?",opts:["Lundi","Mardi","Mercredi","Jeudi"],a:2},
+      {label:"Quel appel a duré le plus longtemps ?",opts:["Bois & Co, mardi","M. Moreau, mercredi","Hôtel du Parc, lundi","M. Moreau, lundi"],a:1}],
+      "l'Hôtel du Parc appelle parfois au nom de Mme Fontaine, parfois au nom de la direction. Et l'objet « Signature du contrat » concerne aussi le contrat.",
+      `<div class="inv-wrap"><table class="invoice"><thead><tr><th>Jour</th><th>Heure</th><th>Appelant</th><th>Objet</th><th class="n">Durée</th></tr></thead><tbody>
+      ${calls.map(c=>`<tr><td>${c[0]}</td><td>${c[1]}</td><td>${esc(c[2])}</td><td>${esc(c[3])}</td><td class="n">${c[4]}</td></tr>`).join("")}</tbody></table></div>`);
+  }
+},
+{
+  id:"lettre", title:"La lettre du contrat", teaser:"La lettre qui accompagne le contrat est pleine de fautes.",
+  consigne:"Il y a exactement 10 fautes dans cette lettre. Clique sur chaque mot fautif (clique encore pour annuler), puis vérifie.",
+  render(box, win){
+    const paras = [
+      "Madame Fontaine,",
+      "Suite à notre entretien téléphonique du 14 octobre, nous vous envoyons le contrat pour les 45 chaises que vous avez {commandé|commandées}. Nous {esperons|espérons} qu'il vous conviendra.",
+      "Comme {convenue|convenu}, la livraison aura lieu le vendredi 16. Nos livreurs {arriverons|arriveront} vers 9 h. {Quelque|Quelques} détails restent à régler avec votre service technique.",
+      "Les deux chaises {rayé|rayées} lors de la dernière livraison seront {remplacé|remplacées} {gratuitements|gratuitement}.",
+      "Nous restons à votre disposition pour {tous|tout} renseignement.",
+      "Veuillez agréer, Madame, l'expression de nos sentiments {distingué|distingués}."
+    ];
+    let html="", n=0; const errs={};
+    paras.forEach(p=>{
+      html += "<p>" + p.split(" ").map(w=>{
+        const m = w.match(/^\{(.+?)\|(.+?)\}(.*)$/); const id="w"+(n++);
+        if(m){ errs[id]=m[2]; return `<span class="w" data-id="${id}" tabindex="0" role="button">${esc(m[1])}</span>${esc(m[3])}`; }
+        const c = w.match(/^(.*?)([.,;:]*)$/);
+        return `<span class="w" data-id="${id}" tabindex="0" role="button">${esc(c[1])}</span>${esc(c[2])}`;
+      }).join(" ") + "</p>";
+    });
+    box.innerHTML = `<div class="letter">${html}</div>${checkBtn()}`;
+    box.querySelectorAll(".w").forEach(s=>{ const t=()=>s.classList.toggle("on"); s.onclick=t; s.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();t();} }; });
+    $("#chk").onclick = ()=>{
+      const sel=[...box.querySelectorAll(".w.on")].map(s=>s.dataset.id);
+      const found=sel.filter(id=>errs[id]).length, extra=sel.length-found;
+      if(found===10 && extra===0){
+        box.querySelectorAll(".w.on").forEach(s=>{ s.classList.remove("on"); s.classList.add("fixed"); s.textContent=errs[s.dataset.id]; });
+        return win();
+      }
+      fail(`Tu as trouvé ${found} faute(s) sur 10.${extra?` ${extra} mot(s) sélectionné(s) sont corrects.`:""}`,
+        "vérifie les accents, les accords avec « les chaises » (féminin pluriel), la conjugaison avec « nos livreurs », et les mots invariables.");
+    };
+  }
+},
+{
+  id:"archives", title:"Les archives", teaser:"Les documents du dossier sont éparpillés.",
+  consigne:"Range ces documents du plus ancien (en haut) au plus récent (en bas). Attention : les dates ne sont pas toutes écrites de la même façon.",
+  render(box, win){
+    orderMission(box, win,
+      ["Contrat Hôtel du Parc — 14.10.2026","Devis Moreau — 28/09/2026","Note de crédit Leroy — 2026-10-09","Rappel de paiement — 01/10/2026","Facture Bois & Co — 30 septembre 2026","Réclamation Leroy — 7 octobre 2026","Bon de commande Hôtel du Parc — 2026-10-03"],
+      ["Devis Moreau — 28/09/2026","Facture Bois & Co — 30 septembre 2026","Rappel de paiement — 01/10/2026","Bon de commande Hôtel du Parc — 2026-10-03","Réclamation Leroy — 7 octobre 2026","Note de crédit Leroy — 2026-10-09","Contrat Hôtel du Parc — 14.10.2026"],
+      "réécris toutes les dates sur ton brouillon au même format (jour/mois), par exemple 03/10 pour 2026-10-03.");
+  }
+},
+{
+  id:"facture", title:"La facture du contrat", teaser:"Le contrat contient une facture à recalculer.",
+  consigne:"Recalcule la facture de l'Hôtel du Parc, étape par étape. La remise ne s'applique qu'aux chaises, pas à la livraison. Calculatrice autorisée ; arrondis au centime (ex. 12,50).",
+  render(box, win){
+    formMission(box, win, [
+      {label:"Montant des chaises : 45 × 42,50 € (€)",num:1912.5},
+      {label:"Remise de 8 % sur les chaises (€)",num:153},
+      {label:"Total HTVA : chaises après remise + livraison de 60 € (€)",num:1819.5},
+      {label:"TVA 21 % (€)",num:382.1},
+      {label:"Total TVAC (€)",num:2201.6},
+      {label:"Reste à payer, sachant qu'un acompte de 500 € a déjà été versé (€)",num:1701.6}],
+      "remise = 1 912,50 × 8 ÷ 100. HTVA = chaises − remise + livraison. TVA = HTVA × 21 ÷ 100. Reste = TVAC − acompte.");
+  }
+},
+{
+  id:"suspect", title:"Le mail suspect", teaser:"Un mail « de l'hôtel » vient d'arriver…",
+  consigne:"Lis ce mail attentivement. Pour chaque élément, indique s'il est suspect ou normal.",
+  render(box, win){
+    const S="Indice suspect", N="Normal";
+    formMission(box, win, [
+      {label:"L'adresse de l'expéditeur",opts:[S,N],a:0},
+      {label:"L'objet parle du contrat",opts:[S,N],a:1},
+      {label:"On demande le mot de passe de l'espace client",opts:[S,N],a:0},
+      {label:"Un délai très court avec une menace d'annulation",opts:[S,N],a:0},
+      {label:"Le message commence par « Bonjour »",opts:[S,N],a:1},
+      {label:"La signature « La direction », sans aucun nom",opts:[S,N],a:0}],
+      "compare l'adresse avec celle du journal des appels : hotelduparc.be. Et demande-toi ce qu'une vraie entreprise ne demande jamais par mail.",
+      `<div class="transcript"><p><b>De :</b> direction@hoteldupark.be</p><p><b>Objet :</b> URGENT – contrat</p>
+       <p>Bonjour, suite à la perte du contrat, merci de nous renvoyer une copie signée, ainsi que le mot de passe de votre espace client, avant 15 h. Sans réponse, la commande sera annulée.</p><p>La direction</p></div>`);
+  }
+},
+{
+  id:"excel", title:"Le tableau Excel", teaser:"Le suivi des factures est dans Excel.",
+  consigne:"Les montants des factures sont dans les cellules B2 à B20. Choisis la bonne formule pour chaque besoin.",
+  render(box, win){
+    formMission(box, win, [
+      {label:"Afficher « remise » si B2 dépasse 1 000 €, sinon ne rien afficher",opts:['=SI(B2>1000;"remise";"")','=SI(B2<1000;"remise";"")','=SOMME(B2>1000)','=SI(B2>1000;remise)'],a:0},
+      {label:"Calculer la moyenne des montants",opts:["=MOYENNE(B2:B20)","=MOYENNE(B2;B20)","=SOMME(B2:B20)/2","=NB(B2:B20)"],a:0},
+      {label:"C2 contient =B2*$E$1. Tu recopies la formule vers le bas. Que contient C3 ?",opts:["=B3*$E$1","=B3*$E$2","=B2*$E$1","=C3*$E$1"],a:0},
+      {label:"Compter les factures de plus de 1 000 €",opts:['=NB.SI(B2:B20;">1000")','=SOMME.SI(B2:B20;">1000")','=NB(B2:B20;">1000")','=SI(B2:B20>1000)'],a:0}],
+      "« : » veut dire « de… à » et « ; » veut dire « et ». Les $ empêchent la référence de bouger. NB.SI compte, SOMME.SI additionne.");
+  }
+},
+{
+  id:"note", title:"Le message codé", teaser:"Un post-it abrégé, trouvé sous le clavier.",
+  consigne:"M. Lambert a laissé ce post-it. Associe chaque abréviation à sa signification. Chaque signification n'est utilisée qu'une fois.",
+  render(box, win){
+    box.insertAdjacentHTML("beforebegin",`<div class="rule" style="margin-bottom:18px">RDV Mme F. (HdP) mar. 14 h — N/Réf. 2026-45 — V/Réf. HP-118 — tél. apr. 17 h : NON — contrat : cf. bac « à envoyer »</div>`);
+    matchMission(box, win, [
+      {q:"RDV",a:"Rendez-vous"},{q:"HdP",a:"Hôtel du Parc"},{q:"N/Réf.",a:"Notre référence"},
+      {q:"V/Réf.",a:"Votre référence"},{q:"tél. apr. 17 h : NON",a:"Ne pas téléphoner après 17 h"},{q:"cf.",a:"Voir, se reporter à"}
+    ], ["Rendez-vous","Hôtel du Parc","Notre référence","Votre référence","Ne pas téléphoner après 17 h","Voir, se reporter à"],
+    "N/ = nous, V/ = vous. « cf. » vient du latin et renvoie vers un autre endroit.",
+    d=>`<p><strong style="font-size:21px">${esc(d.q)}</strong></p>`);
+  }
+}
+];
+
+function drawBoard(){
+  $("#board").innerHTML=missions.map((m,i)=>`<button class="task ${state.done[m.id]?"done":""}" data-i="${i}">
+    <span class="num">Piste ${i+1}</span><h3>${m.title}</h3><p>${m.teaser}</p>
+    ${state.done[m.id]?`<span class="stamp">RÉSOLU</span>`:""}</button>`).join("");
+  $("#board").querySelectorAll(".task").forEach(b=>b.onclick=()=>openMission(+b.dataset.i));
+  $("#slots").innerHTML=missions.map((m,i)=>`<div class="slot ${state.done[m.id]?"filled":""}"><b>${state.done[m.id]?CODE[i]:""}</b><small>?</small></div>`).join("");
+}
+function openMission(i){
+  const m=missions[i], p=$("#panel");
+  tries=0; p.hidden=false;
+  p.innerHTML=`<button class="back" id="back">Retour à l'enquête</button><h2>Piste ${i+1} · ${m.title}</h2>
+    ${state.done[m.id]?`<p class="feedback ok" style="display:block">Piste déjà résolue. Ta lettre : ${CODE[i]}</p>`:""}
+    <p class="consigne">${m.consigne}</p><div id="mbox"></div>`;
+  $("#back").onclick=closeMission;
+  m.render($("#mbox"),()=>{
+    state.done[m.id]=true; save(); drawBoard();
+    fb($("#f"),true,`Bravo, piste résolue ! Tu gagnes la lettre « ${CODE[i]} ». Retourne à l'enquête.`);
+  });
+  p.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeMission(){ $("#panel").hidden=true; $("#panel").innerHTML=""; $("#board").scrollIntoView({behavior:"smooth"}); }
+
+function showBonus(){
+  const b=$("#bonus"); b.hidden=false;
+  b.innerHTML=`<h2>Le dossier est retrouvé !</h2>
+    <p>Le casier s'ouvre sur le bac du <b>courrier</b> à envoyer… et le contrat est là, glissé sous une enveloppe ! Le post-it le disait : « cf. bac à envoyer ». M. Lambert pourra le remettre à 17 h.</p>
+    <p>« Merci, détective ! Pour que ça n'arrive plus, j'ai encore besoin de toi. »</p>
+    <h3 style="margin:18px 0 6px">Mission bonus 1 — Le registre des dossiers (dans Excel)</h3>
+    <p>Crée un tableau qui permet de savoir à tout moment qui a emprunté quel dossier. Coche chaque point quand il est fait :</p>
+    <div class="check">
+      ${["Colonnes : dossier, emprunté par, date de sortie, date de retour","Au moins 6 lignes remplies (utilise les collègues et les dossiers du jeu)","Une colonne « Statut » avec une formule SI : « rendu » si la date de retour est remplie, sinon « sorti »","Une cellule qui compte les dossiers encore sortis (NB.SI)","Un filtre sur la ligne de titres","Une mise en forme soignée : titres en gras, bordures, largeurs adaptées"].map(t=>`<label><input type="checkbox"> ${t}</label>`).join("")}
+    </div>
+    <h3 style="margin:22px 0 6px">Mission bonus 2 — La note de service (dans Word)</h3>
+    <p>Rédige une note de service pour tout le personnel : à partir de lundi, chaque dossier emprunté doit être inscrit dans le registre. Indique la date, l'objet, la règle, la raison (sans accuser personne), et la signature de M. Lambert.</p>
+    <p style="margin-top:18px"><strong>Quand tout est coché, lève la main et montre tes deux fichiers au professeur.</strong></p>`;
+  b.scrollIntoView({behavior:"smooth"});
+}
+
+$("#open").onclick=()=>{
+  const v=$("#code").value.trim().toUpperCase(), n=Object.keys(state.done).length;
+  if(v===WORD){ state.open=true; save(); fb($("#codefb"),true,"Clac ! Le casier s'ouvre."); showBonus(); return; }
+  if(n<8) return fb($("#codefb"),false,`Ce n'est pas le bon mot. Il te manque encore ${8-n} lettre(s) : résous toutes les pistes.`);
+  state.codeTries++; save();
+  fb($("#codefb"),false, state.codeTries>=2
+    ? "Ce n'est pas le bon mot. Indice : c'est ce que le facteur apporte chaque matin, et ce que le secrétariat envoie chaque jour."
+    : "Ce n'est pas le bon mot. Utilise toutes les lettres, chacune une seule fois.");
+};
+$("#code").onkeydown=e=>{ if(e.key==="Enter") $("#open").click(); };
+$("#reset").onclick=()=>{
+  if(!confirm("Effacer toute la progression et recommencer ?")) return;
+  state={done:{},open:false,codeTries:0}; save(); $("#bonus").hidden=true; $("#codefb").className="feedback"; $("#code").value=""; closeMission(); drawBoard(); window.scrollTo(0,0);
+};
+drawBoard();
+if(state.open) showBonus();
+</script>
+</body>
+</html>
