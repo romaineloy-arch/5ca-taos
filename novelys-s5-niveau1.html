@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Face à face — l'accueil au comptoir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6EFEE; --card:#FFFFFF; --ink:#1B2B2A; --muted:#566B69; --line:#C6D6D4;
+  --accent:#E0654F; --accent-ink:#FFFFFF;
+  --verbal:#2F6FB0; --vocal:#8A5CC2; --visuel:#1F8A70;
+  --ok:#237A4B; --ok-bg:#E3F3E8; --mid:#8A6100; --mid-bg:#FFF1CF; --err:#B3261E; --err-bg:#FBE6E4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#122120; --card:#1C2E2C; --ink:#E4EFED; --muted:#9DB5B2; --line:#34504D; --verbal:#7FB2E6; --vocal:#C0A0EA; --visuel:#5CC9A7; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F; }
+}
+:root[data-theme="dark"]{ --bg:#122120; --card:#1C2E2C; --ink:#E4EFED; --muted:#9DB5B2; --line:#34504D; --verbal:#7FB2E6; --vocal:#C0A0EA; --visuel:#5CC9A7; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.1;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+select{font:inherit;color:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card);max-width:100%}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{max-width:980px;margin:0 auto;padding:26px 18px 40px}
+
+.top{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px}
+.brand span{color:var(--accent)}
+.ntag{order:3;background:var(--ink);color:var(--bg);font-size:14px;font-weight:700;padding:4px 12px;border-radius:20px}
+.vvv{display:flex;gap:14px;flex-wrap:wrap}
+.g{min-width:130px}
+.g b{font-size:13px;display:flex;justify-content:space-between;gap:8px}
+.g .tr{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:3px}
+.g .fi{height:100%;width:0;transition:width .5s}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px}
+.hero h1{font-size:clamp(34px,6vw,58px);font-weight:800}
+.hero h1 span{color:var(--accent)}
+.hero p{max-width:62ch}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:20px 0}
+.three div{border-radius:8px;padding:14px 16px;color:#fff}
+.three strong{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:22px}
+.three p{margin:4px 0 0;font-size:16px}
+
+.scene{display:grid;grid-template-columns:230px 1fr;gap:20px;align-items:start}
+.client{position:sticky;top:12px;border-radius:10px;padding:18px;background:var(--ink);color:var(--bg)}
+.client .who{font-family:"Bricolage Grotesque",sans-serif;font-size:24px;font-weight:800;line-height:1.1}
+.client .role{font-size:15px;opacity:.8;margin-bottom:14px}
+.mood-l{font-size:13px;opacity:.85}
+.mood{height:12px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden;margin:4px 0 4px}
+.mood div{height:100%;transition:width .6s,background .6s}
+.mood-t{font-weight:700;font-size:16px}
+.turn-n{font-size:14px;opacity:.8;margin-top:12px}
+
+.sit{border-left:5px solid var(--accent);background:var(--bg);padding:14px 16px;border-radius:0 8px 8px 0;margin-bottom:18px}
+.sit p{margin:0 0 6px}
+.sit .say{font-size:20px;font-weight:700}
+.sit .body{font-style:italic;color:var(--muted)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.col h3{font-size:19px;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.col h3 i{font-style:normal;font-size:12px;font-family:"Atkinson Hyperlegible",sans-serif;color:#fff;padding:2px 8px;border-radius:12px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;cursor:pointer;background:var(--card);font-size:16.5px}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:4px;width:18px;height:18px;flex:none}
+.opt.best{border-color:var(--ok);background:var(--ok-bg)}
+.opt.bad{border-color:var(--err)}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:12px 22px;font-weight:700;font-size:18px}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.fb{border-radius:8px;padding:14px 16px;margin-top:16px}
+.fb.good{background:var(--ok-bg)} .fb.mid{background:var(--mid-bg)} .fb.bad{background:var(--err-bg)}
+.fb .react{font-weight:700;font-size:18px;margin:0 0 8px}
+.fb .pts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.fb .pts span{font-size:14px;font-weight:700;color:#fff;border-radius:12px;padding:2px 10px}
+.fb p{margin:4px 0}
+.dec .row{display:grid;grid-template-columns:1fr minmax(200px,280px);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.small{font-size:15px;color:var(--muted)}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px;padding:8px 18px;border-radius:8px;transform:rotate(-2deg)}
+table.rec{width:100%;border-collapse:collapse;font-size:16px;margin-top:10px}
+table.rec td{padding:6px 4px;border-bottom:1px solid var(--line)}
+table.rec td:last-child{text-align:right;font-weight:700}
+.check label{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:4px;flex:none}
+.linkbtn{background:none;border:0;padding:0;text-decoration:underline;color:var(--muted);font-size:15px}
+footer{max-width:980px;margin:0 auto;padding:0 18px 36px;font-size:15px;color:var(--muted);display:flex;gap:20px;flex-wrap:wrap}
+footer a{color:inherit;font-weight:700}
+[hidden]{display:none!important}
+@media (max-width:760px){.scene{grid-template-columns:1fr}.client{position:static}.cols{grid-template-columns:1fr}.dec .row{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.g .fi,.mood div{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="brand">Face à <span>face</span></div>
+    <span class="ntag">L'accueil en face à face · Niveau 1</span>
+    <div class="vvv" id="vvv" hidden>
+      <div class="g"><b><span style="color:var(--verbal)">Les mots</span><span id="pv">–</span></b><div class="tr"><div class="fi" id="fv" style="background:var(--verbal)"></div></div></div>
+      <div class="g"><b><span style="color:var(--vocal)">La voix</span><span id="pc">–</span></b><div class="tr"><div class="fi" id="fc" style="background:var(--vocal)"></div></div></div>
+      <div class="g"><b><span style="color:var(--visuel)">Le corps</span><span id="pb">–</span></b><div class="tr"><div class="fi" id="fb" style="background:var(--visuel)"></div></div></div>
+    </div>
+  </div>
+  <div id="app"></div>
+</main>
+<footer><span>Un autre élève doit commencer ? <button class="linkbtn" id="reset">Tout effacer</button></span><span><a href="index.html" style="color:inherit;font-weight:700">← Retour à tous les jeux</a></span></footer>
+
+<script>
+const KEY="novelys-s5-face-a-face";
+
+/* ---------- Contenu ----------
+   say : [texte, points "mots" (0-4), explication]
+   how : [texte, points "voix" (0-3), points "corps" (0-3), explication]          */
+const SCENES=[
+{ who:"Mme Leroy", role:"Cliente fidèle, vient chercher sa commande", mood:65,
+  turns:[
+  { say:"", body:"Mme Leroy entre et s'approche du comptoir en souriant. Toi, tu es au téléphone avec un fournisseur, en fin de conversation.",
+    s:[["Je termine l'appel poliment (« Je vous rappelle dans cinq minutes »), puis : « Bonjour Madame Leroy, bienvenue ! »",4,"Tu termines proprement ton appel et tu salues la cliente par son nom : elle se sent reconnue."],
+       ["Je continue ma conversation : elle attendra.",0,"Une personne en face de toi passe avant une conversation qui peut être reportée."],
+       ["Je raccroche et je dis : « Oui ? C'est pour quoi ? »",1,"Sans bonjour, l'accueil est froid, même si tu as raccroché."]],
+    h:[["Je lui adresse un sourire et un signe de tête pendant l'appel, puis je me tourne vers elle. Voix chaleureuse.",3,3,"Le sourire et le signe de tête disent « je vous ai vue » avant même de parler."],
+       ["Je ne la regarde pas avant d'avoir raccroché. Voix neutre.",1,0,"Ne pas regarder quelqu'un, c'est lui faire sentir qu'il dérange."],
+       ["Je la regarde sans expression. Voix monotone.",0,1,"Une voix monotone et un visage fermé donnent l'impression qu'on s'ennuie."]],
+    good:"Mme Leroy te rend ton sourire.", bad:"Mme Leroy attend, un peu gênée." },
+  { say:"« Je viens chercher ma table, c'est la commande 2026-061. »", body:"",
+    s:[["« Parfait, je regarde tout de suite. La commande 2026-061, c'est bien cela ? »",4,"Répéter le numéro permet de vérifier qu'on a bien compris : c'est la reformulation."],
+       ["« Attendez. »",1,"Trop sec : on explique ce qu'on fait et pourquoi on fait attendre."],
+       ["« Vous avez le numéro ? … Ah oui, vous l'avez dit. »",1,"Elle vient de le dire : ça montre que tu n'écoutais pas."]],
+    h:[["Je garde le contact visuel, puis je regarde l'écran en expliquant ce que je fais.",3,3,"Commenter ses actions à voix haute évite les silences gênants."],
+       ["Je fixe l'écran pendant deux minutes sans rien dire.",0,1,"Un long silence, les yeux sur l'écran : la cliente se sent oubliée."],
+       ["Je mâche un chewing-gum en cherchant.",1,0,"Le chewing-gum est à proscrire à l'accueil : il donne une image négligée."]],
+    good:"« Merci, c'est bien ça. »", bad:"Mme Leroy regarde autour d'elle, perplexe." },
+  { say:"", body:"La table est prête, mais le livreur n'est pas encore là : Mme Leroy devra attendre 15 minutes.",
+    s:[["« Votre table est prête. Le livreur arrive dans 15 minutes : puis-je vous proposer un café en attendant ? »",4,"Tu annonces l'attente clairement, avec une durée précise, et tu proposes quelque chose."],
+       ["« Faut attendre 15 minutes. »",1,"L'information est juste, mais le ton est familier et rien n'est proposé."],
+       ["« Le livreur est encore en retard, comme d'habitude… »",0,"On ne critique jamais un collègue devant un client : c'est l'image de toute l'entreprise."]],
+    h:[["Voix posée. Je lui montre la salle d'attente d'un geste ouvert, la main tendue paume vers le haut.",3,3,"La paume ouverte est un geste accueillant, alors que le doigt pointé paraît autoritaire."],
+       ["Je pointe une chaise du doigt. Voix pressée.",1,1,"Le doigt pointé et la voix pressée donnent l'impression d'un ordre."],
+       ["Je hausse les épaules. Voix désolée.",2,0,"Hausser les épaules veut dire « je n'y peux rien » : ça ne rassure pas."]],
+    good:"« Un café ? Volontiers, c'est gentil ! »", bad:"Mme Leroy soupire discrètement." },
+  { say:"« Merci beaucoup, à bientôt ! »", body:"Le livreur est arrivé, la table est chargée.",
+    s:[["« Merci à vous, Madame Leroy. Bonne journée et bonne installation ! »",4,"Une prise de congé personnalisée laisse une dernière impression positive."],
+       ["« Ouais, salut ! »",0,"Beaucoup trop familier pour une cliente."],
+       ["« De rien. »",2,"Poli, mais minimal : la dernière impression compte autant que la première."]],
+    h:[["Je me lève, je souris et je la regarde jusqu'à ce qu'elle passe la porte.",3,3,"Se lever pour saluer, c'est une marque de respect."],
+       ["Je reste assis(e), les yeux déjà sur mon écran.",1,0,"La cliente part avec l'impression qu'on attendait qu'elle s'en aille."],
+       ["Je lui fais un clin d'œil.",2,1,"Le clin d'œil est trop familier dans une relation professionnelle."]],
+    good:"Mme Leroy repart ravie.", bad:"Mme Leroy repart sans se retourner." }]},
+{ who:"M. Petit", role:"Client très mécontent", mood:12,
+  turns:[
+  { say:"« Ça fait trois fois que je viens pour ma facture fausse ! »", body:"Il est entré en claquant la porte. Il parle fort et croise les bras.",
+    s:[["« Bonjour Monsieur Petit. Je vois que vous êtes très mécontent, et je le comprends. Expliquez-moi ce qui se passe. »",4,"Nommer l'émotion (« vous êtes mécontent ») et inviter à parler fait baisser la tension."],
+       ["« Calmez-vous, Monsieur ! »",0,"« Calmez-vous » produit presque toujours l'effet inverse."],
+       ["« Ce n'est pas moi qui m'occupe des factures. »",0,"Pour le client, tu représentes l'entreprise. Se défausser l'énerve encore plus."]],
+    h:[["Je me lève et je le regarde calmement. Voix posée, plus lente que la sienne.",3,3,"Parler plus bas et plus lentement que la personne énervée l'amène souvent à ralentir aussi."],
+       ["Je hausse le ton pour me faire entendre.",0,1,"Crier plus fort que lui, c'est entrer dans le conflit."],
+       ["Je recule et je croise les bras, moi aussi.",1,0,"Les bras croisés répondent à ses bras croisés : deux murs face à face."]],
+    good:"M. Petit baisse un peu la voix.", bad:"M. Petit hausse encore le ton." },
+  { say:"« On m'a facturé 6 chaises alors que j'en ai reçu 4 ! Et personne ne me rappelle ! »", body:"",
+    s:[["« Si je comprends bien, vous avez reçu 4 chaises, on vous en a facturé 6, et vous attendez toujours qu'on vous rappelle. C'est bien ça ? »",4,"La reformulation prouve que tu as écouté, et elle évite les malentendus."],
+       ["« Ah, encore une erreur de facture… »",0,"Tu confirmes que l'entreprise se trompe souvent. Très mauvaise image."],
+       ["« Vous êtes sûr de les avoir bien comptées ? »",0,"Mettre en doute sa parole, c'est l'accuser de mentir."]],
+    h:[["Je prends des notes pendant qu'il parle, en hochant la tête avec de petits « oui… d'accord… ».",3,3,"C'est l'écoute active : les hochements de tête et les petits mots montrent que tu suis."],
+       ["Je lui coupe la parole pour aller plus vite.",0,1,"Couper la parole à quelqu'un d'énervé, c'est jeter de l'huile sur le feu."],
+       ["Je regarde mon téléphone pendant qu'il parle.",1,0,"Le message est clair : « ce que vous dites ne m'intéresse pas »."]],
+    good:"« Oui… voilà, c'est exactement ça. »", bad:"« Vous m'écoutez, au moins ?! »" },
+  { say:"« Bon. Et maintenant, on fait quoi ? »", body:"Il se calme un peu et décroise les bras.",
+    s:[["« Je transmets votre dossier à la comptabilité aujourd'hui. Vous recevrez une facture corrigée, et je vous appelle moi-même vendredi pour vérifier. »",4,"Une solution concrète, avec un délai, et une personne responsable : c'est rassurant."],
+       ["« On va voir ce qu'on peut faire. »",1,"Trop vague : c'est exactement ce qu'on lui a déjà dit deux fois."],
+       ["« Je vous rembourse les deux chaises tout de suite, en liquide. »",0,"Ce n'est pas dans ton pouvoir. On ne promet jamais ce qu'on ne peut pas tenir."]],
+    h:[["Je le regarde dans les yeux. Voix ferme et rassurante.",3,3,"Le regard direct et la voix ferme montrent que tu t'engages vraiment."],
+       ["Je baisse les yeux. Voix hésitante.",1,0,"Une voix hésitante fait douter de la promesse."],
+       ["Je souris très largement. Voix enjouée.",1,1,"Un grand sourire face à un client fâché peut sembler moqueur : il faut adapter son attitude."]],
+    good:"M. Petit hoche la tête, rassuré.", bad:"M. Petit recroise les bras." },
+  { say:"« D'accord. J'espère que cette fois, ce sera la bonne. »", body:"",
+    s:[["« Je m'y engage. Voici ma carte, avec mon nom : vous saurez qui contacter. Merci pour votre patience. »",4,"Donner son nom, c'est prendre la responsabilité du suivi. Le client n'est plus face à une « entreprise » anonyme."],
+       ["« Oui, oui. »",1,"Ce double « oui » sonne comme « cause toujours »."],
+       ["« Moi aussi, j'espère ! »",0,"Tu montres que tu n'as pas confiance dans ta propre entreprise."]],
+    h:[["Je lui tends ma carte et je le raccompagne jusqu'à la porte. Voix calme.",3,3,"Raccompagner un client mécontent montre qu'on le prend au sérieux jusqu'au bout."],
+       ["Je reste assis(e) et je lui fais un signe de la main.",1,1,"Poli, mais distant après une situation aussi tendue."],
+       ["Je soupire bruyamment dès qu'il se retourne.",0,0,"Il peut l'entendre, et les autres clients aussi."]],
+    good:"« Merci. Au revoir. » M. Petit repart apaisé.", bad:"M. Petit repart en marmonnant." }]},
+{ who:"Yanis", role:"Jeune candidat, très timide", mood:30,
+  turns:[
+  { say:"« Euh… bonjour… c'est pour… un CV… »", body:"Un jeune homme entre, s'arrête près de la porte et regarde le sol. Il parle très bas.",
+    s:[["« Bonjour, bienvenue ! Approchez, je vous en prie. Vous venez déposer votre candidature ? »",4,"Tu l'invites à s'approcher et tu l'aides en formulant sa demande à sa place."],
+       ["« Quoi ? Parlez plus fort ! »",0,"Il est déjà très mal à l'aise : ce ton le paralyserait."],
+       ["« On ne prend personne en ce moment. »",0,"Ce n'est pas à toi de décider, et tu ne sais même pas pour quel poste il vient."]],
+    h:[["Je souris, je me lève et je l'invite d'un geste ouvert à s'approcher. Voix douce.",3,3,"Le sourire et la voix douce rassurent une personne timide."],
+       ["Je reste assis(e) et je lui fais signe du doigt d'approcher.",1,1,"Le doigt qui fait signe d'approcher paraît autoritaire."],
+       ["Je parle très fort pour qu'il m'entende depuis la porte.",0,1,"Parler fort à une personne timide l'intimide encore plus."]],
+    good:"Yanis s'approche et relève un peu la tête.", bad:"Yanis recule d'un pas." },
+  { say:"« Oui… pour le poste de menuisier. »", body:"En attendant M. Lambert, tu engages un peu la conversation pour le mettre à l'aise.",
+    s:[["« Super ! Qu'est-ce qui vous plaît dans le métier de menuisier ? »",4,"C'est une question ouverte : on ne peut pas y répondre par oui ou non. Elle invite à parler."],
+       ["« Vous avez de l'expérience ? »",2,"C'est une question fermée : il risque de répondre juste « non » et de se refermer."],
+       ["« Vous êtes sûr de vouloir ce poste ? »",0,"Cette question le met en doute : il perdra encore confiance."]],
+    h:[["Je le regarde avec bienveillance et je lui laisse le temps de répondre.",3,3,"Le silence patient est une forme d'écoute : il lui laisse la place."],
+       ["Je regarde l'heure pendant qu'il cherche ses mots.",1,0,"Regarder l'heure veut dire « dépêche-toi »."],
+       ["Je finis ses phrases à sa place pour l'aider.",1,2,"L'intention est gentille, mais tu lui coupes la parole."]],
+    good:"Yanis sourit et parle de ses stages.", bad:"Yanis répond par un simple « oui »." },
+  { say:"« Voilà mon CV. »", body:"Il te tend son CV, un peu froissé.",
+    s:[["« Merci. Je le transmets aujourd'hui à M. Lambert, qui s'occupe des recrutements. »",4,"Tu expliques ce qui va se passer et qui va s'en occuper : c'est rassurant."],
+       ["« Il est un peu froissé, hein ! »",0,"Une remarque gratuite qui le met mal à l'aise."],
+       ["« Je le pose là. »",1,"On ne sait pas ce qu'il va devenir."]],
+    h:[["Je le prends à deux mains et je le range tout de suite dans une chemise. Voix sincère.",3,3,"Prendre soin du document, c'est montrer du respect pour la personne."],
+       ["Je le prends du bout des doigts.",1,0,"Ce geste donne l'impression que le document est sale ou sans valeur."],
+       ["Je le pose sur une pile sans le regarder.",1,1,"Il va croire que son CV finira oublié sous la pile."]],
+    good:"Yanis se redresse, soulagé.", bad:"Yanis regarde son CV, inquiet." },
+  { say:"« Et… je vais avoir une réponse ? »", body:"",
+    s:[["« M. Lambert répond à toutes les candidatures, en général sous deux semaines. Bonne chance ! »",4,"Une information claire, honnête, et un encouragement."],
+       ["« Peut-être, on verra. »",1,"Trop vague : il repart dans l'incertitude."],
+       ["« Oui, vous êtes pris, c'est sûr ! »",0,"Une fausse promesse : ce n'est pas toi qui décides."]],
+    h:[["Je lui serre la main en le regardant, avec un sourire encourageant.",3,3,"La poignée de main franche avec le regard termine l'échange sur une note positive."],
+       ["Je lui tourne déjà le dos.",0,0,"Il repart avec l'impression d'avoir dérangé."],
+       ["Je lui tape sur l'épaule.",2,1,"Le contact physique est trop familier avec un inconnu."]],
+    good:"Yanis te remercie et sort avec le sourire.", bad:"Yanis sort, tête baissée." }]}
+];
+const DECODES=[
+{ title:"Décode le langage du corps", cat:"b",
+  intro:"Avant le prochain client, entraîne-toi : que veut dire chaque signal ? Chaque réponse n'est utilisée qu'une fois.",
+  rows:[["Le client regarde sa montre et tapote le comptoir.","Il est pressé, impatient"],
+        ["La cliente croise les bras et fronce les sourcils.","Elle est fermée ou mécontente"],
+        ["Le visiteur hoche la tête en souriant.","Il est d'accord, il te suit"],
+        ["La personne évite ton regard et parle très bas.","Elle est timide ou mal à l'aise"]],
+  fb:"Le corps parle souvent avant les mots. Repérer ces signaux permet d'adapter ton attitude avant même que la personne parle." },
+{ title:"Questions ouvertes ou fermées ?", cat:"v",
+  intro:"Une question fermée appelle « oui » ou « non ». Une question ouverte invite à s'exprimer. Classe chaque question.",
+  rows:[["« Êtes-vous satisfait de votre table ? »","Question fermée"],
+        ["« Comment s'est passée la livraison ? »","Question ouverte"],
+        ["« Que puis-je faire pour vous ? »","Question ouverte"],
+        ["« Avez-vous rendez-vous ? »","Question fermée"]],
+  multi:true,
+  fb:"Les questions ouvertes commencent souvent par comment, que, qu'est-ce que, pourquoi. Les questions fermées servent à vérifier une information précise." }
+];
+/* Déroulé : scène 0, décodage 0, scène 1, décodage 1, scène 2 */
+const SEQ=[["s",0],["d",0],["s",1],["d",1],["s",2]];
+const MAX_V = SCENES.length*4*4 + 10, MAX_C = SCENES.length*4*3, MAX_B = SCENES.length*4*3 + 10;
+
+let S={phase:"start",k:0,t:0,v:0,c:0,b:0,mv:0,mc:0,mb:0,moods:[],recap:[]};
+try{const s=localStorage.getItem(KEY); if(s) S=Object.assign(S,JSON.parse(s));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s), app=$("#app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+function moodLabel(m){ return m<20?["Furieux","#B3261E"]:m<40?["Mécontent","#D9622B"]:m<60?["Neutre","#C9A227"]:m<80?["Content","#5AA05A"]:["Ravi","#237A4B"]; }
+function gauges(){
+  $("#vvv").hidden = S.phase!=="play";
+  [["v","mv","pv","fv"],["c","mc","pc","fc"],["b","mb","pb","fb"]].forEach(([k,m,p,f])=>{
+    const x=pct(S[k],S[m]); $("#"+p).textContent=S[m]?x+" %":"–"; $("#"+f).style.width=(S[m]?x:0)+"%"; });
+}
+
+/* ---------- Écrans ---------- */
+function start(){
+  app.innerHTML=`<section class="card hero">
+    <h1>Face à <span>face</span></h1>
+    <p>Tu tiens l'accueil de l'agence Lambert. Trois personnes vont se présenter au comptoir, chacune avec son humeur. À chaque moment de l'échange, tu choisis <b>ce que tu dis</b> et <b>comment tu le dis</b>. Leur humeur change selon ton attitude.</p>
+    <div class="three">
+      <div style="background:var(--verbal)"><strong>Les mots</strong><p>Ce que tu dis : les formules, les questions, la reformulation.</p></div>
+      <div style="background:var(--vocal)"><strong>La voix</strong><p>Comment tu le dis : le ton, le volume, le rythme.</p></div>
+      <div style="background:var(--visuel)"><strong>Le corps</strong><p>Ce que ton corps dit : le regard, le sourire, la posture, les gestes.</p></div>
+    </div>
+    <p>Entre deux clients, un petit entraînement t'attend. À la fin, tu obtiens ton bilan sur ces trois points. Environ 30 minutes.</p>
+    <div class="actions"><button class="btn" id="go">${S.phase==="play"?"Reprendre":"Ouvrir l'accueil"}</button></div></section>`;
+  $("#go").onclick=()=>{ if(S.phase!=="play") S={phase:"play",k:0,t:0,v:0,c:0,b:0,mv:0,mc:0,mb:0,moods:[],recap:[]}; save(); render(); };
+}
+function scene(idx){
+  const sc=SCENES[idx];
+  if(S.t===0 && S.moods[idx]===undefined){ S.moods[idx]=sc.mood; save(); }
+  const tu=sc.turns[S.t], mood=S.moods[idx], [ml,mc]=moodLabel(mood);
+  const says=shuffle(tu.s), hows=shuffle(tu.h);
+  app.innerHTML=`<div class="scene">
+    <aside class="client"><div class="who">${esc(sc.who)}</div><div class="role">${esc(sc.role)}</div>
+      <div class="mood-l">Humeur</div><div class="mood"><div id="mb" style="width:${mood}%;background:${mc}"></div></div>
+      <div class="mood-t" id="mt">${ml}</div><div class="turn-n">Client ${idx+1} sur 3 · moment ${S.t+1} sur 4</div></aside>
+    <section class="card">
+      <div class="sit">${tu.body?`<p class="body">${esc(tu.body)}</p>`:""}${tu.say?`<p class="say">${esc(tu.say)}</p>`:""}</div>
+      <div class="cols">
+        <div class="col"><h3>Ce que tu dis <i style="background:var(--verbal)">les mots</i></h3>
+          ${says.map((o,j)=>`<label class="opt"><input type="radio" name="say" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}</div>
+        <div class="col"><h3>Comment tu le dis <i style="background:var(--vocal)">la voix</i><i style="background:var(--visuel)">le corps</i></h3>
+          ${hows.map((o,j)=>`<label class="opt"><input type="radio" name="how" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}</div>
+      </div>
+      <div class="actions"><button class="btn" id="val" disabled>Valider</button></div>
+      <div id="out"></div>
+    </section></div>`;
+  const upd=()=>{ $("#val").disabled=!(document.querySelector("input[name=say]:checked")&&document.querySelector("input[name=how]:checked")); };
+  document.querySelectorAll("input").forEach(i=>i.onchange=upd);
+  $("#val").onclick=()=>{
+    const s=says[+document.querySelector("input[name=say]:checked").value], h=hows[+document.querySelector("input[name=how]:checked").value];
+    document.querySelectorAll("input").forEach(i=>i.disabled=true); $("#val").parentNode.remove();
+    document.querySelectorAll("input[name=say]").forEach((i,j)=>{ const l=i.parentNode; if(says[j][1]===4) l.classList.add("best"); else if(says[j]===s) l.classList.add("bad"); });
+    document.querySelectorAll("input[name=how]").forEach((i,j)=>{ const l=i.parentNode; if(hows[j][1]+hows[j][2]===6) l.classList.add("best"); else if(hows[j]===h) l.classList.add("bad"); });
+    const tot=s[1]+h[1]+h[2];
+    S.v+=s[1]; S.mv+=4; S.c+=h[1]; S.mc+=3; S.b+=h[2]; S.mb+=3;
+    const nm=Math.max(0,Math.min(100, mood + (tot-5)*4));
+    S.moods[idx]=nm;
+    const [nl,nc]=moodLabel(nm);
+    $("#mb").style.width=nm+"%"; $("#mb").style.background=nc; $("#mt").textContent=nl;
+    const cls=tot>=9?"good":tot>=5?"mid":"bad";
+    $("#out").innerHTML=`<div class="fb ${cls}" role="status"><p class="react">${esc(tot>=7?tu.good:tu.bad)}</p>
+      <div class="pts"><span style="background:var(--verbal)">Mots ${s[1]}/4</span><span style="background:var(--vocal)">Voix ${h[1]}/3</span><span style="background:var(--visuel)">Corps ${h[2]}/3</span></div>
+      <p>${esc(s[2])}</p><p>${esc(h[3])}</p>${tot<10?`<p class="small">Les meilleurs choix sont encadrés en vert.</p>`:""}</div>
+      <div class="actions"><button class="btn" id="nx">Suite →</button></div>`;
+    gauges();
+    const last=S.t===3;
+    if(last) S.recap.push([sc.who,nm]);
+    S.t = last?0:S.t+1; if(last) S.k++;
+    save();
+    $("#nx").onclick=render; $("#nx").focus();
+  };
+}
+function decode(idx){
+  const d=DECODES[idx], opts=d.multi?["Question ouverte","Question fermée"]:shuffle(d.rows.map(r=>r[1]));
+  const rows=shuffle(d.rows);
+  app.innerHTML=`<section class="card dec"><h2 style="font-size:32px">${esc(d.title)}</h2><p>${esc(d.intro)}</p>
+    ${rows.map((r,i)=>`<div class="row"><span>${esc(r[0])}</span><select data-i="${i}"><option value="">— Choisis —</option>${opts.map(o=>`<option>${esc(o)}</option>`).join("")}</select></div>`).join("")}
+    ${d.multi?`<div class="row"><span>Un client que tu ne connais pas s'approche du comptoir. Quelle distance est la plus confortable pour lui ?</span><select id="dist"><option value="">— Choisis —</option>${shuffle(["Très proche : moins de 50 cm","Environ un bras tendu ou un peu plus","Le plus loin possible : 5 mètres"]).map(o=>`<option>${o}</option>`).join("")}</select></div>`:""}
+    <div class="actions"><button class="btn" id="val">Valider</button></div><p class="small" id="w"></p><div id="out"></div></section>`;
+  $("#val").onclick=()=>{
+    const sels=[...document.querySelectorAll("select")];
+    if(sels.some(s=>!s.value)){ $("#w").textContent="Réponds à toutes les lignes avant de valider."; return; }
+    let pts=0, n=rows.length+(d.multi?1:0), per=10/n, corr=[];
+    sels.forEach(s=>{ s.disabled=true;
+      const right = s.id==="dist" ? "Environ un bras tendu ou un peu plus" : rows[s.dataset.i][1];
+      if(s.value===right){ pts+=per; s.style.borderColor="var(--ok)"; } else { s.style.borderColor="var(--err)"; corr.push(right); } });
+    pts=Math.round(pts*2)/2;
+    if(d.cat==="b"){S.b+=pts;S.mb+=10;} else {S.v+=pts;S.mv+=10;}
+    $("#val").parentNode.remove(); $("#w").remove();
+    $("#out").innerHTML=`<div class="fb ${pts>=8?"good":pts>=5?"mid":"bad"}"><p class="react">${String(pts).replace(".",",")} / 10</p>
+      ${corr.length?`<p>Réponses correctes pour tes erreurs : ${corr.map(esc).join(" · ")}</p>`:""}<p>${esc(d.fb)}${d.multi?" Avec un inconnu, on garde environ la distance d'un bras tendu : trop près, c'est envahissant ; trop loin, c'est froid.":""}</p></div>
+      <div class="actions"><button class="btn" id="nx">Client suivant →</button></div>`;
+    S.k++; save(); gauges();
+    $("#nx").onclick=render; $("#nx").focus();
+  };
+}
+function end(){
+  const tv=pct(S.v,MAX_V), tc=pct(S.c,MAX_C), tb=pct(S.b,MAX_B), all=pct(S.v+S.c+S.b,MAX_V+MAX_C+MAX_B);
+  const title= all>=85?"Pro de l'accueil":all>=70?"Bon accueil":all>=50?"Accueil à perfectionner":"Accueil à retravailler";
+  const weakest=[["les mots",tv],["la voix",tc],["le corps",tb]].sort((a,b)=>a[1]-b[1])[0][0];
+  app.innerHTML=`<section class="card hero"><span class="badge">${title}</span>
+    <h2 style="font-size:34px;margin-top:18px">Ton bilan : ${all} %</h2>
+    <div class="three">
+      <div style="background:var(--verbal)"><strong>Les mots : ${tv} %</strong></div>
+      <div style="background:var(--vocal)"><strong>La voix : ${tc} %</strong></div>
+      <div style="background:var(--visuel)"><strong>Le corps : ${tb} %</strong></div></div>
+    <p>Ton point à travailler en priorité : <b>${weakest}</b>.</p>
+    <table class="rec">${S.recap.map(([w,m])=>`<tr><td>${esc(w)} repart…</td><td>${moodLabel(m)[0]}</td></tr>`).join("")}</table>
+    <div class="actions"><button class="btn ghost" id="again">Recommencer</button></div></section>
+    ${all>=70?`<section class="card" style="margin-top:18px;border-left:6px solid var(--ok)"><h2 style="font-size:28px">Mission finale : écris ta propre scène</h2>
+      <p>Dans Word, écris le dialogue d'une nouvelle scène d'accueil : <b>un client pressé</b> qui arrive au comptoir. Tu pourras la jouer avec un camarade.</p>
+      <div class="check">${["Un titre et la présentation des deux personnages","Au moins 8 répliques, en alternance","Entre parenthèses et en italique, pour chaque réplique : la voix et les gestes (ex. : (voix calme, sourire))","Au moins une question ouverte et une reformulation","Un accueil et une prise de congé soignés","Mise en page claire : noms des personnages en gras, répliques bien séparées","Relu : zéro faute"].map(x=>`<label><input type="checkbox"> ${x}</label>`).join("")}</div>
+      <p><b>Quand tout est coché, lève la main : tu joueras peut-être ta scène devant le professeur !</b></p></section>`
+    :`<section class="card" style="margin-top:18px"><h2 style="font-size:26px">Mission finale verrouillée</h2><p>Atteins au moins 70 % pour la débloquer. Relis bien les explications et recommence !</p></section>`}`;
+  $("#again").onclick=()=>{S={phase:"play",k:0,t:0,v:0,c:0,b:0,mv:0,mc:0,mb:0,moods:[],recap:[]};save();render();};
+}
+function render(){
+  if(S.phase==="play" && S.k>=SEQ.length) S.phase="end";
+  gauges();
+  if(S.phase==="start") start();
+  else if(S.phase==="end") end();
+  else { const [ty,i]=SEQ[S.k]; ty==="s"?scene(i):decode(i); }
+  save(); window.scrollTo(0,0);
+}
+$("#reset").onclick=()=>{ if(!confirm("Effacer la partie en cours ?")) return; S={phase:"start",k:0,t:0,v:0,c:0,b:0,mv:0,mc:0,mb:0,moods:[],recap:[]}; save(); render(); };
+if(S.phase==="play"){ gauges(); $("#vvv").hidden=true; start(); } else render();
+</script>
+</body>
+</html>

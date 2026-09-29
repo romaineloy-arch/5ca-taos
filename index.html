@@ -18,7 +18,10 @@
    Champs :
      titre       : le nom affiché
      fichier     : le nom exact du fichier .html (majuscules comprises)
-     famille     : "escape" (énigmes et code) ou "simulation" (journée de travail)
+     famille     : "escape" (énigmes et code), "simulation" (journée de travail)
+                   ou "novelys" (jeux du projet NOVELYS)
+     theme       : pour les jeux "novelys" seulement : le thème (sans numéro de semaine),
+                   écrit exactement de la même façon pour les 3 niveaux
      niveau      : 1, 2 ou 3
      duree       : texte libre, par exemple "45 min"
      description : une ou deux phrases pour les élèves
@@ -76,26 +79,59 @@ const JEUX = [
     materiel: "Feuille, bic, calculatrice",
     suivi: "journee-type-niveau2"
   },
-   {
-       titre: "La veille des portes ouvertes",
-       fichier: "portes-ouvertes.html",
-       famille: "simulation",
-       niveau: 3,
-       duree: "1 h 15 à 1 h 30",
-       description: "Demain, l'agence ouvre ses portes au public. Inscriptions, traiteur, planning, journaliste : c'est toi qui gères tout.",
-       materiel: "Feuille, bic, calculatrice",
-       suivi: "journee-portes-ouvertes"
-     },
-   {
-       titre: "Le dossier disparu",
-       fichier: "escape-dossier-disparu.html",
-       famille: "escape",
-       niveau: 3,
-       duree: "1 h 15 à 1 h 30",
-       description: "Le contrat de l'Hôtel du Parc a disparu ! Mène l'enquête, puis remets les lettres dans l'ordre pour ouvrir le casier.",
-       materiel: "Brouillon, calculatrice",
-       suivi: "escape-secretariat-v4"
-     }
+  {
+    titre: "La veille des portes ouvertes",
+    fichier: "portes-ouvertes.html",
+    famille: "simulation",
+    niveau: 3,
+    duree: "1 h 15 à 1 h 30",
+    description: "Demain, l'agence ouvre ses portes au public. Inscriptions, traiteur, planning, journaliste : c'est toi qui gères tout.",
+    materiel: "Feuille, bic, calculatrice",
+    suivi: "journee-portes-ouvertes"
+  },
+  {
+    titre: "Le dossier disparu",
+    fichier: "escape-dossier-disparu.html",
+    famille: "escape",
+    niveau: 3,
+    duree: "1 h 15 à 1 h 30",
+    description: "Le contrat de l'Hôtel du Parc a disparu ! Mène l'enquête, puis remets les lettres dans l'ordre pour ouvrir le casier.",
+    materiel: "Brouillon, calculatrice",
+    suivi: "escape-secretariat-v4"
+  },
+  {
+    titre: "Face à face",
+    fichier: "novelys-s5-niveau1.html",
+    famille: "novelys",
+    theme: "L'accueil en face à face",
+    niveau: 1,
+    duree: "30 min",
+    description: "Trois visiteurs au comptoir. À chaque réplique, choisis ce que tu dis et comment tu le dis : les mots, la voix, le corps.",
+    materiel: "",
+    suivi: "novelys-s5-face-a-face"
+  },
+  {
+    titre: "Tuteur d'accueil",
+    fichier: "novelys-s5-niveau2.html",
+    famille: "novelys",
+    theme: "L'accueil en face à face",
+    niveau: 2,
+    duree: "40 min",
+    description: "Léo, le nouveau stagiaire, fait des erreurs. Forme-le en 8 modules : réflexes, 5 étapes, proxémie, écoute active, DESC…",
+    materiel: "Support théorique",
+    suivi: "novelys-s5-niveau2"
+  },
+  {
+    titre: "Le hall en effervescence",
+    fichier: "novelys-s5-niveau3.html",
+    famille: "novelys",
+    theme: "L'accueil en face à face",
+    niveau: 3,
+    duree: "45 min",
+    description: "Une matinée seul(e) à l'accueil de NOVELYS : agenda, registre, badges et visiteurs qui arrivent en même temps.",
+    materiel: "",
+    suivi: "novelys-s5-niveau3"
+  }
 ];
 /* ================== FIN DE LA PARTIE À MODIFIER ================== */
 </script>
@@ -150,6 +186,11 @@ section{margin-top:40px}
 .simulation .status{background:var(--accent);color:#fff}
 .escape .kicker{font-size:15px;opacity:.75}
 
+.theme{font-family:"Space Grotesk",system-ui,sans-serif;font-size:20px;margin:22px 0 0;padding-left:12px;border-left:5px solid #E07B2E}
+.novelys{background:#1F3A63;color:#fff;border-radius:6px;border-top:6px solid #E07B2E}
+.novelys h3{font-family:"Space Grotesk",system-ui,sans-serif}
+.novelys .kicker{color:#F5B27A;font-size:14px;letter-spacing:.06em}
+.novelys .status{background:#E07B2E;color:#fff}
 .levels{color:var(--muted);font-size:15px;margin-top:40px;border-top:1px solid var(--line);padding-top:16px}
 [hidden]{display:none!important}
 @media (max-width:640px){header{grid-template-columns:1fr}.hint{max-width:none}}
@@ -177,6 +218,11 @@ section{margin-top:40px}
     <div class="grid" id="g-simulation"></div>
   </section>
 
+  <section id="s-novelys">
+    <div class="sechead"><h2>Projet NOVELYS</h2><p>Un thème, trois niveaux.</p></div>
+    <div id="g-novelys"></div>
+  </section>
+
   <p class="levels">Niveau 1 : pour démarrer · Niveau 2 : plus de réflexion · Niveau 3 : pour les plus rapides. Le badge coloré indique où tu en es sur cet ordinateur.</p>
 </main>
 
@@ -192,6 +238,25 @@ function statut(cle){
   }catch(e){}
   return "";
 }
+function carte(j,fam){
+  const st=statut(j.suivi);
+  const kick=fam==="escape"?"Escape game":fam==="simulation"?"Simulation":"NOVELYS";
+  return `<a class="game ${fam}" href="${encodeURI(j.fichier)}">
+      <span class="kicker">${kick} · Niveau ${esc(j.niveau)}</span>
+      <h3>${esc(j.titre)}</h3>
+      <p>${esc(j.description)}</p>
+      <div class="meta"><span>${esc(j.duree)}</span>${j.materiel?`<span>${esc(j.materiel)}</span>`:""}</div>
+      ${st?`<span class="status">${st}</span>`:""}
+      <span class="go">Jouer →</span></a>`;
+}
+/* Rubrique NOVELYS : regroupée par thème, dans l'ordre d'ajout, puis par niveau */
+(function(){
+  const jeux=JEUX.filter(j=>j.famille==="novelys");
+  document.getElementById("s-novelys").hidden=!jeux.length;
+  const themes=[...new Set(jeux.map(j=>j.theme||"Autres jeux"))];
+  document.getElementById("g-novelys").innerHTML=themes.map(t=>`<h3 class="theme">${esc(t)}</h3><div class="grid">${
+    jeux.filter(j=>(j.theme||"Autres jeux")===t).sort((a,b)=>(a.niveau||1)-(b.niveau||1)).map(j=>carte(j,"novelys")).join("")}</div>`).join("");
+})();
 ["escape","simulation"].forEach(fam=>{
   const jeux=JEUX.filter(j=>(j.famille||"escape")===fam).sort((a,b)=>(a.niveau||1)-(b.niveau||1));
   document.getElementById("s-"+fam).hidden=!jeux.length;

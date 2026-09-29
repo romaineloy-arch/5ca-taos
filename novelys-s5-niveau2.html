@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tuteur d'accueil — Novelys, l'accueil en face à face, niveau 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F6; --card:#FFFFFF; --ink:#1A2740; --muted:#56627A; --line:#CBD3E0;
+  --navy:#1F3A63; --navy-ink:#FFFFFF; --orange:#E07B2E; --orange-soft:#FCEBDD;
+  --ok:#237A4B; --ok-bg:#E3F3E8; --mid:#8A6100; --mid-bg:#FFF1CF; --err:#B3261E; --err-bg:#FBE6E4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#10182A; --card:#1A2439; --ink:#E6EBF4; --muted:#9FAAC0; --line:#33415C; --navy:#2A4C80; --orange-soft:#3F2A18; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F; }
+}
+:root[data-theme="dark"]{ --bg:#10182A; --card:#1A2439; --ink:#E6EBF4; --muted:#9FAAC0; --line:#33415C; --navy:#2A4C80; --orange-soft:#3F2A18; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.12;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+select{font:inherit;color:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card);max-width:100%;width:100%}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+main{max-width:940px;margin:0 auto;padding:22px 18px 40px}
+
+.bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:24px;color:var(--navy);letter-spacing:.02em}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .logo{color:#9DB9E6} }
+.logo::before{content:"";display:inline-block;width:10px;height:10px;background:var(--orange);margin-right:6px;vertical-align:4px}
+.logo small{display:block;font-family:"Atkinson Hyperlegible",sans-serif;font-weight:400;font-size:12px;color:var(--orange);letter-spacing:.08em;text-transform:uppercase}
+.tag{background:var(--navy);color:var(--navy-ink);font-size:14px;font-weight:700;padding:4px 12px;border-radius:20px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px}
+.hero{background:var(--navy);color:var(--navy-ink);border:0}
+.hero h1{font-size:clamp(32px,5.5vw,52px);font-weight:800}
+.hero h1 span{color:var(--orange)}
+.hero p{max-width:64ch;opacity:.95}
+.leo{display:flex;gap:14px;align-items:flex-start;margin:18px 0 0}
+.avatar{flex:none;width:52px;height:52px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px}
+.bubble{background:var(--orange-soft);color:var(--ink);border-radius:4px 14px 14px 14px;padding:12px 16px;max-width:620px}
+.hero .bubble{background:rgba(255,255,255,.12);color:var(--navy-ink)}
+
+.carnet{margin-top:20px}
+.carnet h2{font-size:26px;margin-bottom:10px}
+.mod{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.mod .n{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700}
+.mod.done .n{background:var(--ok);border-color:var(--ok);color:#fff}
+.mod.next .n{background:var(--orange);border-color:var(--orange);color:#fff}
+.mod .t{font-weight:700}
+.mod .d{font-size:15px;color:var(--muted)}
+.mod .s{font-weight:700;white-space:nowrap}
+.stars{color:var(--orange);letter-spacing:.08em}
+
+.mission h2{font-size:30px;margin-bottom:6px}
+.mission .ref{display:inline-block;font-size:14px;color:var(--orange);font-weight:700;margin-bottom:10px}
+.consigne{margin:12px 0 18px;max-width:70ch}
+.scene{background:var(--bg);border-left:5px solid var(--navy);padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:18px}
+.scene p{margin:0 0 6px}
+.row{display:grid;grid-template-columns:1fr minmax(210px,300px);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.row .why{grid-column:1/-1;font-size:15px;color:var(--err);margin-top:-4px}
+.group{margin:18px 0 4px;padding:10px 14px;background:var(--navy);color:var(--navy-ink);border-radius:8px;font-weight:700}
+.q{margin:18px 0 6px;font-weight:700}
+.opt{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;background:var(--card)}
+.opt:hover{border-color:var(--orange)}
+.opt input{margin-top:4px;width:18px;height:18px;flex:none}
+.opt.best{border-color:var(--ok);background:var(--ok-bg)} .opt.bad{border-color:var(--err)}
+.good-sel{border-color:var(--ok)!important} .bad-sel{border-color:var(--err)!important}
+.lines{display:grid;gap:8px}
+.line{display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--card)}
+.line.visitor{border-style:dashed;cursor:default;color:var(--muted);background:transparent}
+.line.didas{font-style:italic}
+.line.on{border-color:var(--orange);background:var(--orange-soft)}
+.line.right{border-color:var(--ok);background:var(--ok-bg)}
+.line.missed{border-color:var(--err);background:var(--err-bg)}
+.line .lw{display:block;font-size:14px;font-style:normal;margin-top:4px}
+.btn{background:var(--orange);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-weight:700;font-size:18px}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.hero .btn.ghost{color:var(--navy-ink);border-color:rgba(255,255,255,.4)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.fb{border-radius:8px;padding:14px 16px;margin-top:18px}
+.fb.good{background:var(--ok-bg)} .fb.mid{background:var(--mid-bg)} .fb.bad{background:var(--err-bg)}
+.fb strong{font-size:20px;display:block;margin-bottom:6px}
+.fb p{margin:6px 0 0}
+.warn{color:var(--err);font-size:15px;margin-top:8px}
+.check label{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:4px;flex:none}
+footer{max-width:940px;margin:0 auto;padding:0 18px 36px;font-size:15px;color:var(--muted)}
+.linkbtn{background:none;border:0;padding:0;text-decoration:underline;color:var(--muted);font-size:15px}
+@media (max-width:680px){.row{grid-template-columns:1fr}.mod{grid-template-columns:40px 1fr}.mod .s{grid-column:2}}
+</style>
+</head>
+<body>
+<main>
+  <div class="bar"><div class="logo">NOVELYS<small>Solutions &amp; événements d'entreprise</small></div><span class="tag">L'accueil en face à face · Niveau 2</span></div>
+  <div id="app"></div>
+</main>
+<footer>Un autre élève doit commencer ? <button class="linkbtn" id="reset">Tout effacer</button> · <a href="index.html" style="color:inherit;font-weight:700">← Retour à tous les jeux</a></footer>
+
+<script>
+const KEY="novelys-s5-niveau2";
+/* ---------- Les 8 modules de formation ----------
+   rows : lignes avec liste déroulante {label, opts, a (indice de la bonne réponse), why, group}
+   qs   : questions à choix {q, opts:[[texte, bonne(1/0)]]}
+   lines: script à analyser {who, txt, bad (1 = erreur), why}                                       */
+const MODS=[
+{ t:"Les 4 réflexes", d:"Observer la première impression", ref:"Support : partie 3",
+  leo:"Hier, j'ai accueilli mon premier visiteur. Tu peux me dire ce que j'ai bien fait… et ce que j'ai raté ?",
+  consigne:"Voici ce que Léo a fait. Pour chaque action, indique si elle est réussie ou à corriger.",
+  scene:"14 h 02. Un visiteur entre dans le hall de NOVELYS. Léo est assis à l'accueil et tape un e-mail.",
+  rows:[
+   {label:"Léo finit sa phrase au clavier pendant 20 secondes avant de lever la tête.",opts:["Réussi","À corriger"],a:1,why:"Rapidité : on réagit dans les toutes premières secondes."},
+   {label:"Il lève les yeux, regarde le visiteur et lui sourit sincèrement.",opts:["Réussi","À corriger"],a:0,why:"C'est le réflexe « regard et sourire »."},
+   {label:"Il reste assis, adossé au fond de sa chaise.",opts:["Réussi","À corriger"],a:1,why:"Posture : on se lève et on se tient droit."},
+   {label:"Il dit, d'une voix claire et posée : « Bonjour, bienvenue chez NOVELYS. »",opts:["Réussi","À corriger"],a:0,why:"Voix posée, audible, bien articulée."},
+   {label:"Il croise les bras en attendant la réponse du visiteur.",opts:["Réussi","À corriger"],a:1,why:"Les bras croisés ferment la posture : on reste ouvert."},
+   {label:"Pendant que le visiteur parle, Léo le regarde et hoche la tête.",opts:["Réussi","À corriger"],a:0,why:"C'est de l'écoute active."},
+   {label:"Quand le visiteur hésite, Léo soupire en regardant l'horloge.",opts:["Réussi","À corriger"],a:1,why:"Soupir et regard vers l'horloge sont des signaux négatifs involontaires."}],
+  fb:"Les 4 réflexes de la première impression : la posture, le regard et le sourire, la voix, la rapidité. Ils se jouent en quelques secondes." },
+{ t:"Les 5 étapes", d:"Le parcours du visiteur", ref:"Support : partie 2",
+  leo:"J'ai noté plein de choses à faire, mais je mélange tout. Tu m'aides à les ranger dans les 5 étapes ?",
+  consigne:"Classe chaque action dans la bonne étape du parcours du visiteur.",
+  rows:[
+   ["Se lever dès que la porte s'ouvre",0],["Lever les yeux et sourire au visiteur qui entre",0],
+   ["Saluer, se présenter et demander le motif de la visite",1],["Demander : « Avec qui avez-vous rendez-vous ? »",1],
+   ["Prévenir Mme Fontaine de l'arrivée du visiteur",2],["Accompagner le visiteur jusqu'à la salle de réunion",2],
+   ["Annoncer : « Mme Fontaine arrive dans dix minutes. »",3],["Proposer un siège et une boisson",3],
+   ["Récupérer le badge visiteur et saluer chaleureusement",4],["Demander : « Tout s'est bien passé ? »",4]
+  ].map(([l,a])=>({label:l,opts:["1. Arrivée","2. Identification","3. Prise en charge","4. Attente","5. Clôture"],a,keep:1})),
+  fb:"Arrivée, identification, prise en charge, attente, clôture. L'étape 5 est souvent oubliée, alors qu'elle laisse la dernière impression." },
+{ t:"La formule en 3 temps", d:"Saluer, identifier, orienter", ref:"Support : partie 4",
+  leo:"Je ne sais jamais quoi dire. Tu peux m'aider à construire mes phrases pour ces trois situations ?",
+  consigne:"Pour chaque situation, choisis la bonne phrase pour chacun des 3 temps de la formule d'accueil.",
+  qs:[
+   {group:"Situation A : M. Dubois, client connu, arrive pour son rendez-vous de 10 h avec Mme Fontaine."},
+   {q:"1. Saluer",opts:[["Bonjour Monsieur Dubois, ravi de vous revoir.",1],["Salut ! Ça va ?",0],["Bonjour, vous êtes qui ?",0]]},
+   {q:"2. Identifier le besoin",opts:[["Vous avez rendez-vous à 10 h avec Mme Fontaine, c'est bien cela ?",1],["C'est pour quoi ?",0],["Vous cherchez quelqu'un ?",0]],why:"Il est attendu : l'agenda permet de le reconnaître sans tout lui redemander."},
+   {q:"3. Orienter / agir",opts:[["Je la préviens de votre arrivée ; je vous invite à patienter un instant.",1],["Attendez là.",0],["C'est au premier étage, vous trouverez.",0]],why:"On ne laisse pas un visiteur se débrouiller seul."},
+   {group:"Situation B : une visiteuse arrive, essoufflée : « Je suis très en retard pour mon rendez-vous ! »"},
+   {q:"1. Saluer",opts:[["Bonjour Madame, bienvenue chez NOVELYS.",1],["Oui, oui, deux secondes.",0],["Bonjour, pas de panique, hein !",0]]},
+   {q:"2. Identifier le besoin",opts:[["Je comprends l'urgence, je m'en occupe tout de suite. Avec qui avez-vous rendez-vous ?",1],["Vous auriez dû partir plus tôt.",0],["Vous êtes sûre d'avoir rendez-vous ?",0]],why:"C'est la variante « visiteur pressé » du support."},
+   {q:"3. Orienter / agir",opts:[["Je préviens M. Martin de votre arrivée, il vient vous chercher.",1],["Vous ne pouvez pas passer tout de suite.",0],["Voyez avec quelqu'un au deuxième étage.",0]],why:"On préfère une formulation positive et une action concrète."},
+   {group:"Situation C : un visiteur arrive alors que Léo est au téléphone."},
+   {q:"1. Saluer (pendant l'appel)",opts:[["Bonjour, un instant s'il vous plaît. (avec un sourire)",1],["Rien : Léo termine d'abord son appel.",0],["Chut, je suis au téléphone !",0]],why:"On salue toujours, même occupé, puis on termine l'appel rapidement."},
+   {q:"2. Identifier (après l'appel)",opts:[["Merci de votre patience. Je m'appelle Léo, en quoi puis-je vous aider ?",1],["Voilà. Oui ?",0],["C'était long, hein. Vous voulez quoi ?",0]]},
+   {q:"3. Orienter / agir",opts:[["Si je comprends bien, vous déposez un dossier pour le service événements : je le leur transmets tout de suite.",1],["Posez-le là.",0],["Revenez plus tard.",0]]}
+  ],
+  fb:"Saluer, identifier le besoin, orienter ou agir : cette structure fonctionne dans toutes les situations. Seules les variantes changent (visiteur connu, pressé, appel en cours)." },
+{ t:"La bonne distance", d:"Les zones de la proxémie", ref:"Support : partie 5",
+  leo:"On m'a dit que j'étais parfois trop près des visiteurs… ou trop loin. Je ne comprends pas.",
+  consigne:"Pour chaque situation, indique dans quelle zone se trouve Léo, et si c'est adapté.",
+  rows:[
+   {label:"Léo se penche à 30 cm du visiteur pour lui montrer un document.",a:0,why:"De 0 à 45 cm, c'est la zone intime, réservée aux proches, même pour montrer un document."},
+   {label:"Léo se tient à environ 1 m du visiteur, de l'autre côté du comptoir.",a:1,why:"De 45 cm à 1,2 m, c'est la zone personnelle, idéale pour l'accueil."},
+   {label:"Léo accueille un groupe de 15 personnes et leur parle à 3 m.",a:2,why:"La zone sociale convient pour s'adresser à un groupe."},
+   {label:"Léo répond à un visiteur seul depuis le fond de la pièce, à 4 m, sans se déplacer.",a:3,why:"Pour un visiteur seul, c'est trop loin : impression de froideur."},
+   {label:"Léo indique d'un geste calme la direction à un visiteur au bout du couloir, à 2 m.",a:2,why:"Orienter à distance dans un couloir : zone sociale, c'est adapté."}
+  ].map(r=>Object.assign(r,{opts:["Zone intime : à éviter","Zone personnelle : adapté","Zone sociale : adapté","Zone sociale : trop loin ici"],keep:1})),
+  qs:[{q:"Quelle distance moyenne conseille-t-on pour accueillir un visiteur ?",opts:[["Environ 1 mètre",1],["Environ 30 centimètres",0],["Au moins 3 mètres",0]]}],
+  fb:"Zone intime : de 0 à 45 cm. Zone personnelle : de 45 cm à 1,2 m (l'accueil). Zone sociale : 1,2 m et plus (un groupe, un couloir)." },
+{ t:"L'écoute active", d:"Reformuler et questionner", ref:"Support : partie 6",
+  leo:"Certains visiteurs ne savent pas très bien ce qu'ils veulent. Comment je fais ?",
+  consigne:"Pour chaque demande floue, choisis la meilleure reformulation, puis la meilleure question pour préciser.",
+  qs:[
+   {q:"« Je cherche quelqu'un, mais je ne sais pas trop qui, c'est pour un dossier. » Reformulation :",opts:[["Si je comprends bien, vous venez pour un dossier, mais vous ne savez pas à qui vous adresser.",1],["Vous ne savez pas qui vous cherchez ?!",0],["Un dossier. D'accord.",0]]},
+   {q:"Et la question pour préciser :",opts:[["De quel type de dossier s'agit-il ?",1],["C'est pour la comptabilité ?",0],["Pourquoi est-ce que vous ne savez pas ?",0]],why:"Le besoin est flou : une question ouverte l'aide à s'exprimer. « C'est pour la comptabilité ? » suppose la réponse."},
+   {q:"« J'ai rendez-vous, je crois, mais je ne suis pas sûr de l'heure exacte. » Reformulation :",opts:[["Vous pensez avoir rendez-vous aujourd'hui, mais vous n'êtes pas certain de l'heure.",1],["Il faudrait le savoir, quand même.",0],["Ah, ça arrive souvent.",0]]},
+   {q:"Et la question pour préciser :",opts:[["Avec qui avez-vous rendez-vous ? Je vérifie tout de suite dans l'agenda.",1],["Vous êtes sûr d'avoir rendez-vous ?",0],["Vous n'avez pas regardé votre agenda ?",0]]},
+   {q:"« C'est urgent, il faut que ça aille vite. » Reformulation :",opts:[["Je comprends que c'est urgent pour vous ; je m'en occupe tout de suite.",1],["Tout le monde est pressé, vous savez.",0],["Calmez-vous.",0]]},
+   {q:"Et la question pour préciser :",opts:[["Que puis-je faire pour vous en priorité ?",1],["C'est vraiment urgent ?",0],["Vous pouvez revenir plus tard ?",0]]}],
+  fb:"Reformuler prouve qu'on a écouté. La question ouverte sert à cerner un besoin flou, la question fermée à confirmer un point précis." },
+{ t:"La méthode DESC", d:"Désamorcer un visiteur en colère", ref:"Support : partie 9",
+  leo:"Un visiteur attendait depuis 25 minutes au lieu de 5. Il a crié… et j'ai paniqué. J'ai noté des phrases, mais je ne sais plus lesquelles utiliser.",
+  consigne:"Classe chaque phrase : à quelle lettre de la méthode DESC correspond-elle ? Certaines phrases sont à éviter.",
+  rows:[
+   {label:"« Vous attendez depuis vingt-cinq minutes, alors qu'on vous avait annoncé cinq minutes. »",a:0},
+   {label:"« Je comprends que cette attente soit très désagréable pour vous. »",a:1},
+   {label:"« Je vais tout de suite voir Mme Fontaine pour savoir ce qui la retient. »",a:2},
+   {label:"« Vous aurez une réponse précise d'ici deux minutes. »",a:3},
+   {label:"« Calmez-vous, vous n'êtes pas le seul à attendre. »",a:4,why:"On ne répond jamais sur le même registre."},
+   {label:"« Ce n'est pas ma faute si elle est en retard. »",a:4,why:"Sa colère vise la situation, pas toi : inutile de te défendre."}
+  ].map(r=>Object.assign(r,{opts:["D : décrire les faits","E : exprimer le ressenti","S : spécifier une solution","C : conséquence positive","À éviter"],keep:1})),
+  qs:[{q:"Malgré tout, le visiteur continue de crier et menace de partir. Que fait Léo ?",opts:[["Il fait appel à un responsable : ce n'est pas un échec, c'est un réflexe professionnel.",1],["Il hausse le ton pour se faire entendre.",0],["Il le laisse partir : il ne peut plus rien faire.",0]]}],
+  fb:"DESC : Décrire les faits sans jugement, Exprimer le ressenti, Spécifier une solution, annoncer la Conséquence positive. Et savoir passer la main quand la situation dépasse ce qu'on peut gérer seul." },
+{ t:"Situations délicates", d:"Confidentialité, diversité, bons mots", ref:"Support : parties 6, 10 et 11",
+  leo:"Il y a des situations où je ne sais vraiment pas comment réagir…",
+  consigne:"Pour chaque situation, choisis la meilleure réaction.",
+  qs:[
+   {q:"Un visiteur demande : « M. Martin, de chez Delcourt, est déjà passé ce matin ? »",opts:[["« Je ne peux pas vous renseigner sur les autres visites. Je peux prévenir la personne que vous venez voir. »",1],["« Oui, il est reparti vers 11 h. »",0],["« Attendez, je regarde dans le registre. »",0]]},
+   {q:"Une dame en fauteuil roulant arrive, accompagnée de son fils. Léo s'adresse…",opts:[["…directement à la dame, en lui proposant son aide sans l'imposer.",1],["…au fils, c'est plus simple.",0],["…à la dame, lentement et très fort, comme à un enfant.",0]]},
+   {q:"Un monsieur âgé ne comprend pas bien les explications de Léo.",opts:[["Léo ralentit son débit et reformule plus simplement.",1],["Léo répète la même phrase, plus fort.",0],["Léo lui écrit l'information sur un post-it, sans rien dire.",0]]},
+   {q:"Une visiteuse parle très peu le français.",opts:[["Léo utilise des phrases courtes, des gestes et un plan écrit des locaux.",1],["Léo parle plus vite pour gagner du temps.",0],["Léo appelle un collègue et la laisse seule en attendant.",0]]},
+   {q:"Mme Fontaine n'est pas disponible avant 15 h. Léo dit :",opts:[["« Mme Fontaine pourra vous recevoir à 15 h. Je vous invite à patienter en salle d'attente. »",1],["« Vous ne pouvez pas la voir avant 15 h. »",0],["« Elle est pas là. »",0]]},
+   {q:"Un client demande où en est son dossier. Léo répond :",opts:[["« Votre dossier est en cours de traitement au service événements. »",1],["« Il est chez la team EVT, en phase PX-2. »",0],["« C'est dans le pipe. »",0]]},
+   {q:"Un visiteur s'approche du comptoir alors que la liste des rendez-vous du jour est ouverte à l'écran.",opts:[["Léo réduit la fenêtre ou tourne l'écran, puis l'accueille.",1],["Rien : ce n'est pas grave.",0],["Léo lui demande de reculer de trois mètres.",0]]}],
+  fb:"On adapte la forme de l'accueil à chaque public, jamais son niveau de qualité ou de respect. On protège les informations internes, on préfère les formulations positives, et on évite le vocabulaire interne." },
+{ t:"Le script de Léo", d:"L'évaluation finale", ref:"Support : synthèse",
+  leo:"Voilà comment j'ai accueilli M. Lefèvre, qui avait un entretien à 14 h avec Mme Fontaine (retenue jusqu'à 14 h 15). J'ai fait des erreurs, je le sais… tu les trouves ?",
+  consigne:"Il y a exactement 5 erreurs dans ce que fait ou dit Léo. Clique sur chaque ligne fautive (clique encore pour annuler), puis valide. Les répliques du visiteur ne sont pas cliquables.",
+  lines:[
+   {txt:"(Léo lève les yeux et se lève dès que la porte s'ouvre.)",bad:0},
+   {txt:"Léo : « Bonjour, bienvenue chez NOVELYS. »",bad:0},
+   {who:"v",txt:"M. Lefèvre : « Bonjour, j'ai un entretien avec Madame Fontaine à 14 h. »"},
+   {txt:"Léo : « Ouais, elle est en réunion. »",bad:1,why:"Familier et trop court : on vouvoie et on fait des phrases complètes et courtoises."},
+   {txt:"Léo : « Si je comprends bien, vous avez rendez-vous à 14 h avec Mme Fontaine pour un entretien. »",bad:0},
+   {txt:"Léo : « Elle est en réunion avec le client Delcourt, et ça se passe mal : ça risque de durer. »",bad:1,why:"Confidentialité : on ne parle jamais des autres rendez-vous ni des dossiers en cours."},
+   {txt:"Léo : « Elle sera disponible vers 14 h 15, c'est-à-dire dans un quart d'heure environ. »",bad:0},
+   {txt:"(Léo montre la salle d'attente du doigt et se rassoit, sans l'accompagner.)",bad:1,why:"Geste peu accueillant, et le visiteur est livré à lui-même : on l'accompagne ou on montre le chemin d'un geste ouvert."},
+   {txt:"Léo : « Puis-je vous proposer un café ou un verre d'eau en attendant ? »",bad:0},
+   {txt:"(Léo prévient Mme Fontaine par message de l'arrivée de M. Lefèvre.)",bad:0},
+   {txt:"(Léo inscrit M. Lefèvre au registre des visiteurs : nom, heure d'arrivée, personne visitée.)",bad:0},
+   {txt:"(Vingt-cinq minutes passent. Léo ne donne aucune nouvelle à M. Lefèvre.)",bad:1,why:"Attente : on informe de tout délai, et on ne laisse jamais un visiteur sans nouvelles."},
+   {txt:"(À la fin de l'entretien, Léo dit « Au revoir » sans lever les yeux de son écran.)",bad:1,why:"Clôture : on salue chaleureusement, en regardant la personne. C'est la dernière impression."}],
+  fb:"Un accueil se joue sur toute la durée de la visite : de la première seconde à la dernière impression." }
+];
+
+let S={done:[],cur:null};
+try{const s=localStorage.getItem(KEY); if(s) S=Object.assign(S,JSON.parse(s));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s), app=$("#app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const stars=p=>p>=9?"★★★":p>=7?"★★☆":p>=5?"★☆☆":"☆☆☆";
+const total=()=>S.done.reduce((a,b)=>a+(b||0),0);
+
+function home(){
+  const next=S.done.length;
+  const finished=next>=MODS.length, pc=Math.round(total()/(MODS.length*10)*100);
+  app.innerHTML=`<section class="card hero">
+    <h1>Tuteur <span>d'accueil</span></h1>
+    <p>Tu connais maintenant les bases de l'accueil. NOVELYS te confie une nouvelle mission : former <b>Léo</b>, le stagiaire qui vient d'arriver à l'accueil. Il te montre ses erreurs et ses questions, et c'est toi qui dois l'aider, avec ce que tu as appris dans ton support théorique sur l'accueil.</p>
+    <div class="leo"><div class="avatar">L</div><div class="bubble">« Salut ! Enfin, bonjour… Je suis un peu perdu. On commence ? »</div></div>
+    <p style="margin-top:16px">8 modules, dans l'ordre. Une seule tentative par module, puis la correction s'affiche. Garde ton support à côté de toi : tu peux le consulter.</p></section>
+    <section class="card carnet"><h2>Le carnet de formation de Léo</h2>
+    ${MODS.map((m,i)=>`<div class="mod ${i<next?"done":i===next?"next":""}"><div class="n">${i+1}</div>
+      <div><div class="t">${esc(m.t)}</div><div class="d">${esc(m.d)}</div></div>
+      <div class="s">${i<next?`<span class="stars">${stars(S.done[i])}</span> ${String(S.done[i]).replace(".",",")}/10`:""}</div></div>`).join("")}
+    <div class="actions">${finished?`<button class="btn" id="bilan">Voir mon bilan</button>`:`<button class="btn" id="go">${next?"Continuer : module "+(next+1):"Commencer la formation"}</button>`}</div>
+    ${finished?`<p>Score total : <b>${pc} %</b></p>`:""}</section>`;
+  if($("#go")) $("#go").onclick=()=>mission(next);
+  if($("#bilan")) $("#bilan").onclick=bilan;
+}
+function mission(i){
+  const m=MODS[i];
+  let html=`<section class="card mission"><span class="ref">Module ${i+1} sur ${MODS.length} · ${esc(m.ref)}</span><h2>${esc(m.t)}</h2>
+    <div class="leo"><div class="avatar">L</div><div class="bubble">« ${esc(m.leo)} »</div></div>
+    <p class="consigne"><b>${esc(m.consigne)}</b></p>${m.scene?`<div class="scene"><p>${esc(m.scene)}</p></div>`:""}`;
+  const rows=m.rows?(m.rows.some(r=>r.group)?m.rows:shuffle(m.rows)):[];
+  rows.forEach((r,k)=>{
+    if(r.group){ html+=`<div class="group">${esc(r.group)}</div>`; return; }
+    const o=r.keep?r.opts.map((x,j)=>[x,j]):shuffle(r.opts.map((x,j)=>[x,j]));
+    html+=`<div class="row" data-k="${k}"><span>${esc(r.label)}</span><select data-k="${k}"><option value="">— Choisis —</option>${o.map(([x,j])=>`<option value="${j}">${esc(x)}</option>`).join("")}</select></div>`;
+  });
+  const qs=(m.qs||[]).map(q=>Object.assign({},q,{sh:q.opts?shuffle(q.opts):[]}));
+  qs.forEach((q,k)=>{ if(q.group){ html+=`<div class="group">${esc(q.group)}</div>`; return; } html+=`<p class="q">${esc(q.q)}</p>${q.sh.map((o,j)=>`<label class="opt"><input type="radio" name="q${k}" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}`; });
+  if(m.lines) html+=`<div class="lines">${m.lines.map((l,k)=>`<button class="line ${l.who==="v"?"visitor":""} ${l.txt.startsWith("(")?"didas":""}" data-k="${k}" ${l.who==="v"?"disabled":""}>${esc(l.txt)}</button>`).join("")}</div>`;
+  html+=`<p class="warn" id="w"></p><div id="out"></div><div class="actions"><button class="btn" id="val">Valider</button><button class="btn ghost" id="back">Retour au carnet</button></div></section>`;
+  app.innerHTML=html; window.scrollTo(0,0);
+  $("#back").onclick=home;
+  if(m.lines) app.querySelectorAll(".line:not(.visitor)").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
+  $("#val").onclick=()=>{
+    const sels=[...app.querySelectorAll("select")];
+    const unanswered=sels.some(s=>s.value==="")||qs.some((q,k)=>!q.group&&!app.querySelector(`input[name=q${k}]:checked`));
+    if(unanswered){ $("#w").textContent="Réponds à toutes les questions avant de valider."; return; }
+    let ok=0, n=0, whys=[];
+    sels.forEach(s=>{ const r=rows[s.dataset.k]; n++; s.disabled=true;
+      if(+s.value===r.a){ ok++; s.classList.add("good-sel"); }
+      else { s.classList.add("bad-sel"); s.closest(".row").insertAdjacentHTML("beforeend",`<div class="why">Bonne réponse : ${esc(r.opts[r.a])}${r.why?" · "+esc(r.why):""}</div>`); } });
+    qs.forEach((q,k)=>{ if(q.group) return; n++; const c=app.querySelector(`input[name=q${k}]:checked`);
+      app.querySelectorAll(`input[name=q${k}]`).forEach((inp,j)=>{ inp.disabled=true; const l=inp.parentNode;
+        if(q.sh[j][1]) l.classList.add("best"); else if(inp===c) l.classList.add("bad"); });
+      if(q.sh[+c.value][1]) ok++; else if(q.why) whys.push(q.why); });
+    let pts;
+    if(m.lines){
+      const bads=m.lines.filter(l=>l.bad).length; let found=0, extra=0;
+      app.querySelectorAll(".line:not(.visitor)").forEach(b=>{ const l=m.lines[b.dataset.k]; b.disabled=true;
+        const on=b.classList.contains("on"); b.classList.remove("on");
+        if(l.bad){ if(on){found++; b.classList.add("right");} else b.classList.add("missed");
+          b.insertAdjacentHTML("beforeend",`<span class="lw">${on?"Bien vu : ":"Erreur oubliée : "}${esc(l.why)}</span>`); }
+        else if(on){ extra++; b.insertAdjacentHTML("beforeend",`<span class="lw">Cette ligne était correcte.</span>`); } });
+      pts=Math.max(0,Math.round((found-extra)/bads*20)/2);
+      whys.unshift(`Tu as trouvé ${found} erreur(s) sur ${bads}${extra?`, et signalé ${extra} ligne(s) correcte(s)`:""}.`);
+    } else pts=Math.round(ok/n*20)/2;
+    S.done[i]=pts; save();
+    $("#val").remove(); $("#w").remove();
+    const cls=pts>=8?"good":pts>=5?"mid":"bad";
+    const react=pts>=8?"« Génial, j'ai tout compris, merci ! »":pts>=5?"« Merci, c'est déjà plus clair… mais j'ai encore des doutes. »":"« Hmm… je crois qu'on devrait revoir ça ensemble. »";
+    $("#out").innerHTML=`<div class="fb ${cls}" role="status"><strong>${String(pts).replace(".",",")} / 10 <span class="stars">${stars(pts)}</span></strong>
+      ${!m.lines?`<p>${ok} bonne(s) réponse(s) sur ${n}. Les corrections sont affichées ci-dessus.</p>`:""}
+      ${whys.map(w=>`<p>${esc(w)}</p>`).join("")}<p><b>À retenir :</b> ${esc(m.fb)}</p><p>Léo : ${react}</p></div>`;
+    $("#back").textContent = i+1<MODS.length ? "Module suivant →" : "Voir mon bilan →";
+    $("#back").className="btn"; $("#back").onclick = ()=> i+1<MODS.length ? mission(i+1) : bilan();
+  };
+}
+function bilan(){
+  const pc=Math.round(total()/(MODS.length*10)*100);
+  const weak=MODS.map((m,i)=>[m.t,S.done[i]]).filter(x=>x[1]<7).map(x=>x[0]);
+  const title=pc>=85?"Tuteur expert":pc>=70?"Bon tuteur":pc>=50?"Tuteur en progrès":"Tuteur débutant";
+  app.innerHTML=`<section class="card hero"><span class="tag" style="background:var(--orange)">${title}</span>
+    <h1 style="margin-top:14px">${pc} %</h1>
+    <div class="leo"><div class="avatar">L</div><div class="bubble">${pc>=70?"« Grâce à toi, je me sens prêt pour l'accueil. Merci, vraiment ! »":"« Merci pour ton aide… mais je crois qu'on devrait refaire une formation ensemble. »"}</div></div>
+    ${weak.length?`<p style="margin-top:16px">À revoir dans ton support : <b>${weak.map(esc).join(", ")}</b>.</p>`:`<p style="margin-top:16px">Aucun module sous les 7/10 : bravo !</p>`}
+    <div class="actions"><button class="btn ghost" id="again">Recommencer la formation</button><button class="btn ghost" id="carnet">Voir le carnet</button></div></section>
+    ${pc>=70?`<section class="card" style="margin-top:18px;border-left:6px solid var(--ok)"><h2 style="font-size:28px">Mission finale : le script corrigé (dans Word)</h2>
+      <p>Réécris l'accueil de M. Lefèvre (module 8) <b>sans aucune erreur</b>, réplique par réplique, de son arrivée à son départ. Puis ajoute un petit message pour Léo.</p>
+      <div class="check">${["Un titre, la date et la situation de départ (entretien à 14 h, Mme Fontaine retenue jusqu'à 14 h 15)","Les 5 étapes apparaissent (arrivée, identification, prise en charge, attente, clôture)","La formule en 3 temps est utilisée à l'arrivée","Au moins une reformulation","Les gestes et la voix sont indiqués entre parenthèses, en italique","L'attente est bien gérée : délai annoncé, siège, boisson, nouvelles données","Mise en page claire : nom de chaque personnage en gras","En bas : « Mes 3 conseils pour Léo », avec les mots du support","Relu : zéro faute"].map(x=>`<label><input type="checkbox"> ${x}</label>`).join("")}</div>
+      <p><b>Quand tout est coché, lève la main et montre ton document au professeur.</b></p></section>`
+    :`<section class="card" style="margin-top:18px"><h2 style="font-size:26px">Mission finale verrouillée</h2><p>Atteins au moins 70 % pour la débloquer. Relis les parties du support indiquées, puis recommence la formation.</p></section>`}`;
+  window.scrollTo(0,0);
+  $("#again").onclick=()=>{S={done:[],cur:null};save();home();};
+  $("#carnet").onclick=home;
+}
+$("#reset").onclick=()=>{ if(!confirm("Effacer toute la progression ?")) return; S={done:[],cur:null}; save(); home(); };
+home();
+</script>
+</body>
+</html>
