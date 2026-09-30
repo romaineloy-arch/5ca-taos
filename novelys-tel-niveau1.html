@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Au bout du fil — Novelys, l'appel téléphonique, niveau 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F6; --card:#FFFFFF; --ink:#1A2740; --muted:#56627A; --line:#CBD3E0;
+  --navy:#1F3A63; --navy-ink:#FFFFFF; --orange:#E07B2E; --orange-soft:#FCEBDD;
+  --mots:#2F6FB0; --voix:#8A5CC2; --meth:#1F8A70;
+  --ok:#237A4B; --ok-bg:#E3F3E8; --mid:#8A6100; --mid-bg:#FFF1CF; --err:#B3261E; --err-bg:#FBE6E4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#10182A; --card:#1A2439; --ink:#E6EBF4; --muted:#9FAAC0; --line:#33415C; --navy:#2A4C80; --orange-soft:#3F2A18; --mots:#7FB2E6; --voix:#C0A0EA; --meth:#5CC9A7; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F; }
+}
+:root[data-theme="dark"]{ --bg:#10182A; --card:#1A2439; --ink:#E6EBF4; --muted:#9FAAC0; --line:#33415C; --navy:#2A4C80; --orange-soft:#3F2A18; --mots:#7FB2E6; --voix:#C0A0EA; --meth:#5CC9A7; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.12;margin:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+input[type=text],select{padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card);max-width:100%;width:100%}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+main{max-width:980px;margin:0 auto;padding:18px 18px 40px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:24px;color:var(--navy)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .logo{color:#9DB9E6} }
+.logo::before{content:"";display:inline-block;width:10px;height:10px;background:var(--orange);margin-right:6px;vertical-align:4px}
+.logo small{display:block;font-family:"Atkinson Hyperlegible",sans-serif;font-weight:400;font-size:12px;color:var(--orange);letter-spacing:.08em;text-transform:uppercase}
+.tag{background:var(--navy);color:var(--navy-ink);font-size:14px;font-weight:700;padding:4px 12px;border-radius:20px}
+.gauges{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.g{flex:1;min-width:150px}
+.g b{font-size:13px;display:flex;justify-content:space-between}
+.g .tr{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:3px}
+.g .fi{height:100%;width:0;transition:width .5s}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px}
+.hero{background:var(--navy);color:var(--navy-ink);border:0}
+.hero h1{font-size:clamp(34px,6vw,56px);font-weight:800}
+.hero h1 span{color:var(--orange)}
+.hero p{max-width:64ch}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:18px 0}
+.three div{border-radius:8px;padding:12px 14px;color:#fff}
+.three strong{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:21px}
+.three p{margin:4px 0 0;font-size:15.5px}
+
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
+.caller{position:sticky;top:12px;border-radius:12px;padding:18px;background:var(--navy);color:var(--navy-ink)}
+.caller .lbl{font-size:13px;opacity:.8;text-transform:uppercase;letter-spacing:.08em}
+.caller .who{font-family:"Bricolage Grotesque",sans-serif;font-size:23px;font-weight:800;line-height:1.1;margin:4px 0}
+.caller .num{font-family:"JetBrains Mono",monospace;color:#F5B27A}
+.caller .clock{font-family:"JetBrains Mono",monospace;font-size:26px;color:var(--orange);margin-bottom:10px}
+.mood{height:10px;border-radius:5px;background:rgba(255,255,255,.2);overflow:hidden;margin:12px 0 4px}
+.mood div{height:100%;transition:width .6s,background .6s}
+.step-n{font-size:14px;opacity:.8;margin-top:10px}
+
+.ringer{text-align:center;padding:28px 10px}
+.phone{font-size:62px;display:inline-block}
+.ringing .phone{animation:shake .45s infinite}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+.rings{display:flex;gap:8px;justify-content:center;margin:12px 0 18px}
+.rings span{width:18px;height:18px;border-radius:50%;border:2px solid var(--line)}
+.rings span.on{background:var(--orange);border-color:var(--orange)}
+.rings span.limit{outline:2px dashed var(--err);outline-offset:3px}
+.big{font-size:22px;padding:16px 34px;border-radius:40px}
+
+.said{border-left:5px solid var(--orange);background:var(--bg);padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:16px}
+.said p{margin:0 0 6px}
+.said .quote{font-size:20px;font-weight:700}
+.said .ctx{font-style:italic;color:var(--muted)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.col h3{font-size:19px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.col h3 i{font-style:normal;font-size:12px;font-family:"Atkinson Hyperlegible",sans-serif;color:#fff;padding:2px 8px;border-radius:12px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:9px;cursor:pointer;background:var(--card);font-size:16.5px}
+.opt:hover{border-color:var(--orange)}
+.opt input{margin-top:4px;width:18px;height:18px;flex:none}
+.opt.best{border-color:var(--ok);background:var(--ok-bg)} .opt.bad{border-color:var(--err)}
+.btn{background:var(--orange);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-weight:700;font-size:18px}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.fb{border-radius:8px;padding:14px 16px;margin-top:14px}
+.fb.good{background:var(--ok-bg)} .fb.mid{background:var(--mid-bg)} .fb.bad{background:var(--err-bg)}
+.fb .react{font-weight:700;font-size:18px;margin:0 0 8px}
+.fb .pts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.fb .pts span{font-size:14px;font-weight:700;color:#fff;border-radius:12px;padding:2px 10px}
+.fb p{margin:4px 0}
+.small{font-size:15px;color:var(--muted)}
+.warn{color:var(--err);font-size:15px}
+.row{display:grid;grid-template-columns:1fr minmax(200px,260px);gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.ok-f{border-color:var(--ok)!important} .ko-f{border-color:var(--err)!important}
+table.std{border-collapse:collapse;width:100%;font-size:16px;margin:6px 0 14px}
+table.std th,table.std td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+table.std th{background:var(--navy);color:var(--navy-ink)}
+.tablewrap{overflow-x:auto}
+
+.fiche{border:1px solid var(--line);border-radius:6px;padding:18px 20px;background:var(--card);max-width:720px}
+.fiche .head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:2px solid var(--orange);padding-bottom:8px;margin-bottom:12px}
+.fiche .head .logo{font-size:22px}
+.fiche .head small.addr{font-size:12px;color:var(--muted);text-align:right;font-style:italic}
+.fiche h3{text-align:center;color:var(--navy);text-decoration:underline;margin:6px 0 12px}
+.fiche h4{text-align:center;color:var(--orange);text-decoration:underline;margin:14px 0 8px;font-family:"Bricolage Grotesque",sans-serif}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .fiche h3{color:#9DB9E6} }
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:start}
+.fld{display:grid;gap:3px} .fld label{font-weight:700;font-size:15px}
+.nat label{display:flex;gap:8px;align-items:center;font-size:16px;padding:2px 0}
+.nat input{width:18px;height:18px}
+.badge{display:inline-block;background:var(--orange);color:#fff;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px;padding:8px 18px;border-radius:8px;transform:rotate(-2deg)}
+table.rec{width:100%;border-collapse:collapse;margin-top:8px}
+table.rec td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.2)}
+table.rec td:last-child{text-align:right;font-weight:700}
+.check label{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:4px;flex:none}
+footer{max-width:980px;margin:0 auto;padding:0 18px 36px;font-size:15px;color:var(--muted)}
+footer a{color:inherit;font-weight:700}
+.linkbtn{background:none;border:0;padding:0;text-decoration:underline;color:var(--muted);font-size:15px}
+[hidden]{display:none!important}
+@media (max-width:820px){.layout{grid-template-columns:1fr}.caller{position:static}.cols,.fgrid{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.ringing .phone{animation:none}.g .fi,.mood div{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="bar"><div class="logo">NOVELYS<small>Solutions &amp; événements d'entreprise</small></div><span class="tag">L'appel téléphonique · Niveau 1</span></div>
+  <div class="gauges" id="gauges" hidden>
+    <div class="g"><b><span style="color:var(--mots)">Les mots</span><span id="pm">–</span></b><div class="tr"><div class="fi" id="fm" style="background:var(--mots)"></div></div></div>
+    <div class="g"><b><span style="color:var(--voix)">La voix</span><span id="pv">–</span></b><div class="tr"><div class="fi" id="fv" style="background:var(--voix)"></div></div></div>
+    <div class="g"><b><span style="color:var(--meth)">La méthode</span><span id="pt">–</span></b><div class="tr"><div class="fi" id="ft" style="background:var(--meth)"></div></div></div>
+  </div>
+  <div id="app"></div>
+</main>
+<footer>Un autre élève doit commencer ? <button class="linkbtn" id="reset">Tout effacer</button> · <a href="index.html#novelys">← Retour à tous les jeux</a></footer>
+
+<script>
+const KEY="novelys-tel-niveau1";
+const STANDARD=[["10","Direction générale","Isabelle Vandermeulen"],["11","Secrétariat & Accueil","Nathalie Fontaine (et toi)"],["20","Commercial & Événementiel",""],["30","Comptabilité & Achats",""],["40","Ressources humaines",""]];
+const stdTable=()=>`<div class="tablewrap"><table class="std"><tr><th>Poste</th><th>Service</th><th>Responsable</th></tr>${STANDARD.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")}</table></div>`;
+
+/* ---------- Déroulé ----------
+   Étapes d'un appel :
+   ring  : décrocher avant la 3e sonnerie (points « méthode », max 3)
+   duo   : say [texte, points mots 0-4, explication] + voice [texte, points voix 0-3, explication]
+   one   : une seule question {cat:"m"|"v"|"t", opts:[texte, points 0-3, explication]}
+   poste : choisir le bon poste du standard (méthode, max 3)
+   fiche : remplir la fiche message NOVELYS (méthode, max 8)                          */
+const SEQ=[
+{kind:"call", who:"M. Renard", org:"Imprimix (fournisseur)", num:"071 48 22 90", t:"09:05", mood:55, steps:[
+  {type:"ring"},
+  {type:"duo", ctx:"Tu décroches.", q:"",
+   say:[["« NOVELYS bonjour, [ton prénom] à l'appareil. En quoi puis-je vous aider ? »",4,"Entreprise, puis prénom, puis une question ouverte : la présentation parfaite."],
+        ["« Allô ? »",0,"« Allô ? » ne dit ni qui répond, ni où l'on appelle. À éviter absolument."],
+        ["« [ton prénom], de NOVELYS, bonjour. »",2,"Presque : on dit d'abord l'entreprise, puis le prénom, jamais l'inverse."]],
+   voice:[["Je souris avant de décrocher, je me tiens droit(e), ton posé.",3,"Le sourire s'entend, même sans être vu. Et la posture droite se ressent dans la voix."],
+          ["Je réponds en continuant à taper mon e-mail.",0,"L'appelant l'entend : ton distrait, phrases hachées."],
+          ["Je parle très vite pour gagner du temps.",1,"Un débit trop rapide rend la présentation difficile à comprendre."]]},
+  {type:"duo", ctx:"L'appelant répond, un peu sèchement :", q:"« Oui, bonjour. C'est pour une facture qui n'est toujours pas payée. »",
+   say:[["« Je vais vous orienter vers le bon service. Puis-je savoir qui est à l'appareil, et pour quelle société ? »",4,"Tu identifies l'appelant (nom et société) poliment, en expliquant pourquoi tu le demandes."],
+        ["« C'est qui ? »",0,"Beaucoup trop abrupt : on identifie sans interroger brutalement."],
+        ["« Ah, les factures, c'est pas ici. »",1,"Tu ne sais pas encore qui appelle, et la formule est négative."]],
+   voice:[["Ton calme et aimable, malgré sa sécheresse.",3,"Tu ne réponds pas sur le même registre."],
+          ["Je soupire avant de répondre.",0,"Un soupir s'entend très nettement au téléphone."],
+          ["Voix monotone.",1,"Au téléphone, la voix porte toute l'impression : la monotonie paraît désintéressée."]]},
+  {type:"poste", ctx:"« Renard, de la société Imprimix. Nous sommes votre fournisseur de brochures. »", q:"Vers quel poste dois-tu transférer cet appel ?", a:"30",
+   why:"Une facture fournisseur concerne la Comptabilité & Achats, au poste 30."},
+  {type:"one", cat:"t", q:"Comment transfères-tu l'appel ?",
+   opts:[["« Je vous mets en relation avec le service comptabilité, ne quittez pas. » Puis je préviens la collègue du motif : facture Imprimix impayée.",3,"L'appelant sait ce qui se passe, et la collègue n'aura pas à tout redemander."],
+         ["« Je vous mets en relation avec la comptabilité, ne quittez pas. » Et je transfère directement, sans rien dire à la collègue.",1,"La formule est bonne, mais la collègue ne connaît pas le motif : l'appelant devra tout répéter."],
+         ["« Je vous passe la compta. »",0,"« Je vous passe » est à éviter, et rien n'est expliqué."],
+         ["« Rappelez le poste 30, c'est plus simple. »",0,"C'est à toi de transférer l'appel, pas à l'appelant de rappeler."]]},
+  {type:"one", cat:"t", q:"Le poste 30 est occupé : personne ne décroche. Que fais-tu ?",
+   opts:[["Je reviens vers M. Renard : « Je ne parviens pas à joindre la comptabilité pour l'instant. Souhaitez-vous que je prenne un message, ou préférez-vous rappeler dans quelques minutes ? »",3,"On ne laisse jamais l'appelant sans nouvelles : tu reviens vers lui et tu proposes une alternative."],
+         ["Je le laisse en attente : ils finiront bien par décrocher.",0,"Une attente sans nouvelles donne l'impression d'être oublié."],
+         ["Je raccroche discrètement.",0,"C'est le pire scénario : l'appelant se croit abandonné."]]}],
+  end:["M. Renard préfère laisser un message : « Merci, c'est très aimable. »","M. Renard raccroche, agacé."]},
+{kind:"train", cat:"m", title:"À privilégier ou à éviter ?",
+ intro:"Au téléphone, chaque mot compte. Indique pour chaque phrase si elle est à privilégier ou à éviter.",
+ opts:["À privilégier","À éviter"],
+ rows:[["« Allô ? »",1],["« NOVELYS bonjour, Sarah à l'appareil. »",0],["« Je vous passe la compta. »",1],["« Un instant, je vérifie cela pour vous. »",0],["« Restez en ligne. » (sans demander son accord)",1],["« Je vous prie de m'excuser pour cette attente. »",0]],
+ fb:"On privilégie les formules complètes et courtoises : « Je vous mets en relation avec… », « Puis-je vous demander de patienter quelques instants ? »."},
+{kind:"call", who:"M. Kowalczyk", org:"Brico-Pro", num:"0478 63 20 15", t:"10:40", mood:60, steps:[
+  {type:"ring"},
+  {type:"duo", ctx:"Tu décroches et tu te présentes. L'appelant parle très vite :", q:"« Oui bonjour, Kowalczyk, de Brico-Pro, je voudrais parler à Madame Fontaine, c'est pour notre commande de cloisons. »",
+   say:[["« Pourriez-vous épeler votre nom, s'il vous plaît ? »",4,"On ne devine jamais l'orthographe d'un nom mal compris. Il épelle : K, O, W, A, L, C, Z, Y, K."],
+        ["« D'accord, Monsieur Kovalchik. »",0,"Tu as deviné, et c'est faux. Le message sera mal transmis."],
+        ["« Pardon ? Pardon ? Pardon ? »",1,"Faire répéter sans méthode agace l'appelant. Demande-lui plutôt d'épeler."]],
+   voice:[["Ton aimable, je note au fur et à mesure.",3,"Tu as de quoi noter à portée de main : c'est un réflexe de base."],
+          ["Je retiens tout dans ma tête.",1,"La mémoire ne suffit pas : on note immédiatement."],
+          ["Voix agacée : il parle trop vite !",0,"L'agacement s'entend. Reste calme et posé(e)."]]},
+  {type:"duo", ctx:"Mme Fontaine est en rendez-vous à l'extérieur jusqu'à 14 h. Que dis-tu à M. Kowalczyk ?", q:"",
+   say:[["« Madame Fontaine n'est pas disponible pour le moment. Puis-je prendre un message ? »",4,"Général et honnête : on ne donne pas le détail de l'absence d'un collègue."],
+        ["« Elle est chez le dentiste, elle revient à 14 h. »",0,"Confidentialité : on ne précise jamais la raison de l'absence d'un collègue."],
+        ["« Elle est pas là. »",1,"Trop familier, et tu ne proposes rien."]],
+   voice:[["Voix souriante et posée.",3,"Le sourire rend l'annonce d'une indisponibilité plus agréable."],
+          ["Voix désolée, presque gênée.",1,"Pas besoin de t'excuser : l'absence d'un collègue est normale. Propose une solution."],
+          ["Je mâche un chewing-gum.",0,"Manger, boire ou mâcher pendant un appel est à éviter : tout s'entend."]]},
+  {type:"one", cat:"t", ctx:"Il donne son numéro, très rapidement :", q:"« Zéro quatre sept huit, soixante-trois, vingt, quinze. » Que fais-tu ?",
+   opts:[["Je le répète par petits groupes : « 0478 / 63 / 20 / 15, c'est bien cela ? »",3,"Répéter un numéro par petits groupes permet de vérifier qu'il est bien noté."],
+         ["Je lui demande de le répéter une seule fois, en entier.",1,"Mieux que rien, mais c'est à toi de le répéter pour le vérifier."],
+         ["« C'est noté ! », sans le répéter.",0,"Une seule erreur de chiffre, et le message devient inutile."]]},
+  {type:"duo", ctx:"Il ajoute :", q:"« Ce n'est pas urgent, mais j'aimerais qu'elle me rappelle aujourd'hui, avant 17 h. »",
+   say:[["« Je récapitule : Madame Fontaine vous rappelle aujourd'hui avant 17 h, au 0478 63 20 15, au sujet de votre commande de cloisons. Merci de votre appel, bonne journée. »",4,"Récapituler, remercier, saluer : c'est la conclusion parfaite."],
+        ["« OK, je lui dirai. Au revoir. »",1,"Rien n'est récapitulé : impossible de vérifier que le message est complet."],
+        ["« Ça marche, salut ! »",0,"Beaucoup trop familier pour un appel professionnel."]],
+   voice:[["Ton chaleureux, et je le laisse raccrocher le premier.",3,"Laisser l'appelant raccrocher le premier est une marque de politesse."],
+          ["Je raccroche dès que j'ai fini ma phrase.",0,"Il avait peut-être encore quelque chose à dire."],
+          ["Ton pressé : un autre appel arrive.",1,"L'appelant sent qu'on le « bâcle »."]]},
+  {type:"fiche"}],
+  end:["M. Kowalczyk : « Parfait, merci beaucoup ! »","M. Kowalczyk raccroche, pas vraiment rassuré."]},
+{kind:"train", cat:"t", title:"Le bon poste",
+ intro:"Consulte le standard NOVELYS : vers quel poste dois-tu transférer chacune de ces demandes ?", std:true,
+ opts:["Poste 10","Poste 11","Poste 20","Poste 30","Poste 40"],
+ rows:[["Un client veut organiser un séminaire pour 50 personnes.",2],["Une candidate demande où envoyer son CV.",3+1],["Un fournisseur demande quand sa facture sera payée.",3],["Une journaliste souhaite interviewer la directrice générale.",0]],
+ fb:"10 : direction générale. 11 : secrétariat et accueil. 20 : commercial et événementiel. 30 : comptabilité et achats. 40 : ressources humaines."},
+{kind:"call", who:"Mme Delhaye", org:"Cliente, société Arcanes", num:"065 39 71 08", t:"11:50", mood:25, steps:[
+  {type:"ring"},
+  {type:"duo", ctx:"À peine as-tu dit « NOVELYS bonjour » qu'elle hausse le ton :", q:"« Ça fait trois jours que j'attends le mobilier pour mon événement ! Si ce n'est pas réglé aujourd'hui, j'annule tout ! »",
+   say:[["« Si je comprends bien, votre livraison a trois jours de retard, et c'est très gênant pour votre événement. Je comprends votre inquiétude. »",4,"Tu reformules et tu montres que tu comprends : c'est le premier pas pour désamorcer."],
+        ["« Calmez-vous, Madame. »",0,"« Calmez-vous » produit presque toujours l'effet inverse."],
+        ["« Ce n'est pas moi qui m'occupe des livraisons. »",0,"On ne se justifie jamais au nom de l'entreprise : on reste du côté de la solution."]],
+   voice:[["Ton particulièrement calme et posé.",3,"Au téléphone, le ton doit tout compenser : toute tension dans la voix s'entend."],
+          ["Je hausse le ton pour me faire entendre.",0,"Répondre sur le même registre fait monter la tension."],
+          ["Voix tendue et rapide.",1,"Elle entendra ton stress, et le sien augmentera."]]},
+  {type:"one", cat:"v", q:"Tu dois chercher son dossier dans l'ordinateur. Ça prend une trentaine de secondes.",
+   opts:[["« Je vérifie votre dossier, un instant s'il vous plaît. »",3,"On annonce toujours un silence : sinon, il peut être pris pour de l'agacement ou un abandon de l'appel."],
+         ["Je cherche sans rien dire.",0,"Trente secondes de silence au téléphone, c'est très long : elle croira que tu as raccroché."],
+         ["« Attendez. »",1,"Le mot est sec : « Un instant, je vérifie cela pour vous » est bien plus professionnel."]]},
+  {type:"duo", ctx:"Tu as trouvé son dossier. Comment conclus-tu ?", q:"",
+   say:[["« Je contacte tout de suite le service événementiel pour connaître la nouvelle date de livraison, et je vous rappelle avant 16 h avec une réponse précise. »",4,"Une solution concrète, un délai, un engagement : elle sait ce qui va se passer."],
+        ["« Je vous promets une livraison demain matin. »",0,"Tu n'en sais rien : ne promets jamais ce que tu ne peux pas garantir."],
+        ["« Rappelez plus tard, on verra. »",1,"C'est à NOVELYS de faire le suivi, pas à la cliente."]],
+   voice:[["Ton ferme et rassurant.",3,"La voix ferme donne du poids à ton engagement."],
+          ["Voix hésitante.",1,"L'hésitation fait douter de la promesse."],
+          ["Je soupire avant de répondre.",0,"Un soupir s'entend, et la cliente le prendra pour elle."]]}],
+  end:["Mme Delhaye : « Bon… d'accord. J'attends votre appel avant 16 h. »","Mme Delhaye raccroche sèchement."]},
+{kind:"call", out:true, who:"M. Van Acker", org:"Client, société Zenitas", num:"02 512 44 70", t:"15:30", mood:60, steps:[
+  {type:"one", cat:"t", ctx:"Cette fois, c'est toi qui appelles : tu dois confirmer le rendez-vous de M. Van Acker avec Mme Vandermeulen, demain à 10 h.", q:"Avant de composer le numéro, que prépares-tu ?",
+   opts:[["L'objet précis de l'appel, les informations du rendez-vous (date, heure, personne), et de quoi noter.",3,"Un appel sortant se prépare : tu ne seras jamais pris(e) au dépourvu."],
+         ["Rien : j'improviserai.",0,"Contrairement à un appel reçu, un appel sortant se prépare toujours."],
+         ["Seulement son numéro de téléphone.",1,"Et s'il te pose une question sur le rendez-vous ?"]]},
+  {type:"duo", ctx:"Il décroche : « Van Acker, j'écoute. »", q:"",
+   say:[["« Bonjour Monsieur Van Acker, [ton prénom], de NOVELYS. Avez-vous un instant à m'accorder ? »",4,"Tu te présentes dès la première phrase et tu vérifies sa disponibilité."],
+        ["« Allô, c'est NOVELYS. Bon, pour demain… »",1,"Tu ne te présentes pas et tu te lances sans vérifier s'il est disponible."],
+        ["« Bonjour, vous êtes bien Monsieur Van Acker ? Voilà, je vous appelle pour demain. »",2,"Tu ne dis ni ton prénom ni l'entreprise."]],
+   voice:[["Je souris en parlant, voix claire.",3,"Le sourire s'entend dès la première phrase."],
+          ["Je lis mon texte d'une voix monotone.",1,"On sent que tu récites : ça manque de naturel."],
+          ["Je parle en même temps à un collègue.",0,"Parler à quelqu'un d'autre pendant un appel est à éviter."]]},
+  {type:"duo", ctx:"« Oui, bien sûr. » Tu lui exposes l'objet de l'appel, et il confirme le rendez-vous.", q:"Comment conclus-tu ?",
+   say:[["« Parfait : je note votre confirmation pour demain, 10 h, avec Mme Vandermeulen. Merci, et bonne fin de journée. »",4,"Tu récapitules ce qui a été convenu avant de saluer."],
+        ["« OK, super, salut ! »",0,"Beaucoup trop familier."],
+        ["« C'est bon alors. Au revoir. »",1,"Rien n'est récapitulé."]],
+   voice:[["Ton chaleureux, et j'attends qu'il ait fini avant de raccrocher.",3,"On ne coupe jamais la parole en raccrochant."],
+          ["Ton pressé, je raccroche aussitôt.",0,"Il avait peut-être une question."],
+          ["Voix neutre, sans sourire.",1,"La fin de l'appel laisse la dernière impression."]]}],
+  end:["M. Van Acker : « Merci pour ce rappel, c'est très professionnel. »","M. Van Acker : « Euh… d'accord. »"]}
+];
+
+let S={phase:"start",k:0,s:0,sc:{m:[0,0],v:[0,0],t:[0,0]},moods:{},recap:[]};
+try{const x=localStorage.getItem(KEY); if(x) S=Object.assign(S,JSON.parse(x));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s), app=$("#app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const norm=s=>String(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+const pc=(a,b)=>b?Math.round(a/b*100):0;
+function moodLabel(m){ return m<20?["Furieux","#E0564A"]:m<40?["Agacé","#E88A3A"]:m<60?["Neutre","#D8B43A"]:m<80?["Satisfait","#7CC07C"]:["Ravi","#5CC48A"]; }
+function add(cat,got,max){ S.sc[cat][0]+=got; S.sc[cat][1]+=max; }
+function gauges(){
+  $("#gauges").hidden = S.phase!=="play";
+  [["m","pm","fm"],["v","pv","fv"],["t","pt","ft"]].forEach(([c,p,f])=>{ const [a,b]=S.sc[c]; $("#"+p).textContent=b?pc(a,b)+" %":"–"; $("#"+f).style.width=(b?pc(a,b):0)+"%"; });
+}
+let timer=null; function stopTimer(){ if(timer){clearInterval(timer);timer=null;} }
+
+function start(){
+  app.innerHTML=`<section class="card hero"><h1>Au bout <span>du fil</span></h1>
+    <p>Aujourd'hui, tu tiens le standard téléphonique de NOVELYS. Trois appels vont arriver, et tu devras en passer un toi-même. Ici, l'appelant ne te voit pas : ta voix et tes mots font tout le travail.</p>
+    <div class="three">
+      <div style="background:var(--mots)"><strong>Les mots</strong><p>Se présenter, identifier, reformuler, conclure.</p></div>
+      <div style="background:var(--voix)"><strong>La voix</strong><p>Le sourire qui s'entend, le ton, le débit, les silences.</p></div>
+      <div style="background:var(--meth)"><strong>La méthode</strong><p>Décrocher à temps, transférer, noter un message complet.</p></div>
+    </div>
+    <p><b>Attention :</b> quand le téléphone sonne, clique sur « Décrocher » avant la 3<sup>e</sup> sonnerie !</p>
+    <p>Environ 30 minutes. Garde ton mémo NOVELYS à côté de toi : tu peux le consulter.</p>
+    <div class="actions"><button class="btn" id="go">${S.phase==="play"?"Reprendre":"Prendre le standard"}</button></div></section>`;
+  $("#go").onclick=()=>{ if(S.phase!=="play") S={phase:"play",k:0,s:0,sc:{m:[0,0],v:[0,0],t:[0,0]},moods:{},recap:[]}; save(); render(); };
+}
+function callerCard(c,step){
+  const m=S.moods[S.k]??c.mood, [ml,mc]=moodLabel(m);
+  return `<aside class="caller"><div class="clock">${c.t.replace(":"," h ")}</div>
+    <div class="lbl">${c.out?"Appel sortant":"Appel entrant"}</div><div class="who">${step===0&&!c.out&&SEQ[S.k].steps[0].type==="ring"?"Numéro inconnu":esc(c.who)}</div>
+    <div>${step===0&&!c.out?"":esc(c.org)}</div><div class="num">${esc(c.num)}</div>
+    <div class="lbl" style="margin-top:14px">Humeur de l'interlocuteur</div><div class="mood"><div id="mb" style="width:${m}%;background:${mc}"></div></div>
+    <b id="mt">${ml}</b><div class="step-n">Étape ${step+1} sur ${c.steps.length}</div></aside>`;
+}
+function setMood(delta){
+  const c=SEQ[S.k]; let m=S.moods[S.k]??c.mood; m=Math.max(0,Math.min(100,m+delta)); S.moods[S.k]=m;
+  const [l,col]=moodLabel(m); if($("#mb")){ $("#mb").style.width=m+"%"; $("#mb").style.background=col; $("#mt").textContent=l; }
+}
+function nextBtn(label){ const d=document.createElement("div"); d.className="actions"; d.innerHTML=`<button class="btn" id="nx">${label||"Suite →"}</button>`; $("#zone").appendChild(d); $("#nx").onclick=advance; $("#nx").focus(); }
+function feedback(cls,react,chips,lines){
+  $("#zone").insertAdjacentHTML("beforeend",`<div class="fb ${cls}" role="status">${react?`<p class="react">${esc(react)}</p>`:""}${chips?`<div class="pts">${chips}</div>`:""}${lines.map(l=>`<p>${esc(l)}</p>`).join("")}</div>`);
+}
+const chip=(c,txt)=>`<span style="background:var(--${c})">${txt}</span>`;
+function advance(){
+  stopTimer();
+  const it=SEQ[S.k];
+  if(it.kind==="call"){ S.s++; if(S.s>=it.steps.length){ const m=S.moods[S.k]??it.mood; S.recap.push([it.who,m]); S.s=0; S.k++; } }
+  else S.k++;
+  save(); render();
+}
+
+function callStep(){
+  const c=SEQ[S.k], st=c.steps[S.s];
+  app.innerHTML=`<div class="layout">${callerCard(c,S.s)}<section class="card" id="zone"></section></div>`;
+  const z=$("#zone");
+  if(st.type==="ring"){
+    z.innerHTML=`<div class="ringer ringing" id="rg"><div class="phone" aria-hidden="true">☎</div><h2 style="font-size:26px;margin-top:8px">Le téléphone sonne…</h2>
+      <div class="rings" aria-label="Nombre de sonneries">${[1,2,3,4,5,6].map(i=>`<span data-r="${i}" class="${i===3?"limit":""}"></span>`).join("")}</div>
+      <p class="small">Décroche avant la 3<sup>e</sup> sonnerie (le rond entouré). Pense à sourire avant de décrocher !</p>
+      <button class="btn big" id="pick">Décrocher</button><p class="small" id="rc" aria-live="polite">1 sonnerie</p></div>`;
+    let r=1; const draw=()=>{ document.querySelectorAll("[data-r]").forEach(s=>s.classList.toggle("on",+s.dataset.r<=r)); $("#rc").textContent=r+(r>1?" sonneries":" sonnerie"); };
+    draw();
+    timer=setInterval(()=>{ r++; if(r>6){ pick(true); return; } draw(); },1700);
+    const pick=(auto)=>{ stopTimer(); $("#rg").classList.remove("ringing"); $("#pick").remove();
+      const pts=auto?0:r<=2?3:r===3?2:1; add("t",pts,3); setMood(pts>=2?5:-10);
+      const cls=pts===3?"good":pts>=2?"mid":"bad";
+      feedback(cls,auto?"L'appelant a raccroché… puis rappelé, agacé.":pts===3?"Décroché rapidement !":pts===2?"Juste à temps.":"Trop tard : l'appelant s'impatiente.",
+        chip("meth",`Méthode ${pts}/3`),[auto?"Six sonneries sans réponse : l'appelant a cru que personne n'était là.":`Tu as décroché à la ${r}${r===1?"re":"e"} sonnerie. On décroche avant la 3e : un délai trop long inquiète l'appelant.`]);
+      save(); nextBtn(); };
+    $("#pick").onclick=()=>pick(false); $("#pick").focus();
+    return;
+  }
+  const head=`${st.ctx||st.q?`<div class="said">${st.ctx?`<p class="ctx">${esc(st.ctx)}</p>`:""}${st.q?`<p class="quote">${esc(st.q)}</p>`:""}</div>`:""}`;
+  if(st.type==="duo"){
+    const says=shuffle(st.say), voices=shuffle(st.voice);
+    z.innerHTML=head+`<div class="cols">
+      <div class="col"><h3>Ce que tu dis <i style="background:var(--mots)">les mots</i></h3>${says.map((o,j)=>`<label class="opt"><input type="radio" name="say" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}</div>
+      <div class="col"><h3>Comment tu le dis <i style="background:var(--voix)">la voix</i></h3>${voices.map((o,j)=>`<label class="opt"><input type="radio" name="voice" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}</div></div>
+      <div class="actions"><button class="btn" id="val" disabled>Valider</button></div>`;
+    const upd=()=>{$("#val").disabled=!(document.querySelector("input[name=say]:checked")&&document.querySelector("input[name=voice]:checked"));};
+    z.querySelectorAll("input").forEach(i=>i.onchange=upd);
+    $("#val").onclick=()=>{
+      const si=+document.querySelector("input[name=say]:checked").value, vi=+document.querySelector("input[name=voice]:checked").value;
+      const s=says[si], v=voices[vi];
+      z.querySelectorAll("input").forEach(i=>i.disabled=true); $("#val").parentNode.remove();
+      z.querySelectorAll("input[name=say]").forEach((i,j)=>{ if(says[j][1]===4) i.parentNode.classList.add("best"); else if(j===si) i.parentNode.classList.add("bad"); });
+      z.querySelectorAll("input[name=voice]").forEach((i,j)=>{ if(voices[j][1]===3) i.parentNode.classList.add("best"); else if(j===vi) i.parentNode.classList.add("bad"); });
+      add("m",s[1],4); add("v",v[1],3); const tot=s[1]+v[1]; setMood((tot-4)*7);
+      feedback(tot>=6?"good":tot>=4?"mid":"bad","",chip("mots",`Mots ${s[1]}/4`)+chip("voix",`Voix ${v[1]}/3`),[s[2],v[2]].concat(tot<7?["Les meilleurs choix sont encadrés en vert."]:[]));
+      save(); nextBtn();
+    };
+  }
+  if(st.type==="one"){
+    const opts=shuffle(st.opts), max=Math.max(...st.opts.map(o=>o[1]));
+    z.innerHTML=head+opts.map((o,j)=>`<label class="opt"><input type="radio" name="o" value="${j}"><span>${esc(o[0])}</span></label>`).join("")+`<div class="actions"><button class="btn" id="val" disabled>Valider</button></div>`;
+    z.querySelectorAll("input").forEach(i=>i.onchange=()=>$("#val").disabled=false);
+    $("#val").onclick=()=>{
+      const j=+document.querySelector("input[name=o]:checked").value, o=opts[j];
+      z.querySelectorAll("input").forEach((i,x)=>{ i.disabled=true; if(opts[x][1]===max) i.parentNode.classList.add("best"); else if(x===j) i.parentNode.classList.add("bad"); });
+      $("#val").parentNode.remove(); add(st.cat,o[1],3); setMood((o[1]-1.5)*6);
+      const col=st.cat==="m"?"mots":st.cat==="v"?"voix":"meth", nm=st.cat==="m"?"Mots":st.cat==="v"?"Voix":"Méthode";
+      feedback(o[1]===3?"good":o[1]>=1?"mid":"bad","",chip(col,`${nm} ${o[1]}/3`),[o[2]].concat(o[1]<3?["La meilleure réponse est encadrée en vert."]:[]));
+      save(); nextBtn();
+    };
+  }
+  if(st.type==="poste"){
+    z.innerHTML=head+`<p><b>${esc(st.q)}</b></p>${stdTable()}<div class="row"><span>Poste choisi</span><select id="ps"><option value="">— Choisis —</option>${STANDARD.map(r=>`<option value="${r[0]}">Poste ${r[0]} · ${r[1]}</option>`).join("")}</select></div>
+      <div class="actions"><button class="btn" id="val">Valider</button></div><p class="warn" id="w"></p>`;
+    $("#val").onclick=()=>{
+      const v=$("#ps").value; if(!v){ $("#w").textContent="Choisis un poste."; return; }
+      const ok=v===st.a; $("#ps").disabled=true; $("#ps").classList.add(ok?"ok-f":"ko-f"); $("#val").parentNode.remove(); $("#w").remove();
+      add("t",ok?3:0,3); setMood(ok?5:-10);
+      feedback(ok?"good":"bad","",chip("meth",`Méthode ${ok?3:0}/3`),[ok?"Bon poste !":"Ce n'est pas le bon poste.",st.why]);
+      save(); nextBtn();
+    };
+  }
+  if(st.type==="fiche"){
+    z.innerHTML=`<div class="said"><p class="ctx">L'appel est terminé. Remplis maintenant la fiche message NOVELYS pour Mme Fontaine. Tu dois connaître ses champs par cœur !</p></div>
+    <div class="fiche"><div class="head"><div class="logo">NOVELYS<small>Solutions &amp; événements d'entreprise</small></div><small class="addr">Place des Haies 10, 6060 Gilly<br>Tél. 071 25 14 60</small></div>
+      <h3>Message</h3>
+      <div class="fgrid">
+        <div class="fld"><label for="f1">Message pris par</label><input type="text" id="f1" placeholder="Ton prénom"></div>
+        <div class="fld"><label for="f2">Destiné à</label><select id="f2"><option value="">— Choisis —</option><option>Nathalie Fontaine</option><option>Isabelle Vandermeulen</option><option>Service comptabilité</option></select></div>
+        <div class="fld"><label for="f3">Heure</label><input type="text" id="f3" placeholder="ex. 09:30"></div>
+      </div>
+      <h4>Pendant votre absence</h4>
+      <div class="fgrid">
+        <div class="fld"><label for="f4">M./Mme</label><input type="text" id="f4"></div>
+        <div class="fld"><label for="f5">De (société)</label><input type="text" id="f5"></div>
+        <div class="fld"><label for="f6">N° de tél.</label><input type="text" id="f6" inputmode="tel"></div>
+        <div class="fld nat"><label style="font-weight:700">Nature de la demande</label>${["A téléphoné (sans suite)","Demande qu'on le rappelle","Rappellera","Est venu"].map((x,i)=>`<label><input type="radio" name="nat" value="${i}"> ${x}</label>`).join("")}</div>
+      </div>
+      <div class="fld" style="margin-top:12px"><label>Message (choisis la meilleure reformulation)</label>${shuffle(["Au sujet de la commande de cloisons de Brico-Pro. Souhaite être rappelé aujourd'hui avant 17 h (pas urgent).","Un monsieur a appelé pour un truc de cloisons, il faut le rappeler.","URGENT : commande de cloisons annulée, rappeler immédiatement."]).map(x=>`<label class="opt" style="font-weight:400"><input type="radio" name="msg" value="${esc(x)}"><span>${esc(x)}</span></label>`).join("")}</div>
+    </div><div class="actions"><button class="btn" id="val">Valider la fiche</button></div><p class="warn" id="w"></p>`;
+    $("#val").onclick=()=>{
+      const nat=document.querySelector("input[name=nat]:checked");
+      const msg=document.querySelector("input[name=msg]:checked");
+      const vals=["f1","f2","f3","f4","f5","f6"].map(id=>$("#"+id).value.trim()).concat([msg?msg.value:""]);
+      if(vals.some(v=>!v)||!nat){ $("#w").textContent="Remplis tous les champs de la fiche."; return; }
+      const time=vals[2].replace(/\s/g,"").replace(/[hH.]/,":").replace(/^(\d):/,"0$1:");
+      const checks=[
+        ["f1",vals[0].length>1,"Message pris par : ton prénom, pour qu'on puisse te recontacter."],
+        ["f2",vals[1]==="Nathalie Fontaine","Destiné à : Nathalie Fontaine."],
+        ["f3",time==="10:40","Heure : 10 h 40 (l'heure affichée pendant l'appel)."],
+        ["f4",norm(vals[3]).includes("kowalczyk"),"M./Mme : Kowalczyk (K, O, W, A, L, C, Z, Y, K)."],
+        ["f5",norm(vals[4]).replace(/[\s-]/g,"").includes("bricopro"),"Société : Brico-Pro."],
+        ["f6",vals[5].replace(/\D/g,"")==="0478632015","N° de tél. : 0478 63 20 15."],
+        ["nat",nat.value==="1","Nature : il demande qu'on le rappelle (avant 17 h)."],
+        ["f8",vals[6].startsWith("Au sujet"),"Message : il faut le reformuler clairement, avec toutes les informations, sans rien inventer."]];
+      let pts=0, lines=[];
+      checks.forEach(([id,ok,msg])=>{ if(ok) pts++; else lines.push(msg); if(id!=="nat"&&id!=="f8"){ const e=$("#"+id); e.disabled=true; e.classList.add(ok?"ok-f":"ko-f"); } });
+      document.querySelectorAll("input[name=nat]").forEach(i=>i.disabled=true);
+      document.querySelectorAll("input[name=msg]").forEach(i=>{ i.disabled=true; if(i.value.startsWith("Au sujet")) i.parentNode.classList.add("best"); else if(i.checked) i.parentNode.classList.add("bad"); });
+      $("#val").parentNode.remove(); $("#w").remove(); add("t",pts,8); setMood((pts-5)*3);
+      if(pts===8) lines.push("Fiche complète : date et heure, pour qui, de la part de qui, société, numéro, nature de la demande, message reformulé, et qui l'a pris.");
+      feedback(pts>=7?"good":pts>=5?"mid":"bad",pts===8?"Fiche parfaite !":`${8-pts} champ(s) à corriger :`,chip("meth",`Méthode ${pts}/8`),lines);
+      save(); nextBtn();
+    };
+  }
+}
+function train(){
+  const it=SEQ[S.k], rows=shuffle(it.rows);
+  app.innerHTML=`<section class="card" id="zone"><h2 style="font-size:30px">${esc(it.title)}</h2><p>${esc(it.intro)}</p>${it.std?stdTable():""}
+    ${rows.map((r,i)=>`<div class="row"><span>${esc(r[0])}</span><select data-i="${i}"><option value="">— Choisis —</option>${it.opts.map((o,j)=>`<option value="${j}">${o}</option>`).join("")}</select></div>`).join("")}
+    <div class="actions"><button class="btn" id="val">Valider</button></div><p class="warn" id="w"></p></section>`;
+  $("#val").onclick=()=>{
+    const sels=[...document.querySelectorAll("select")]; if(sels.some(s=>!s.value)){ $("#w").textContent="Réponds à toutes les lignes."; return; }
+    let pts=0, corr=[];
+    sels.forEach(s=>{ const r=rows[s.dataset.i], ok=+s.value===r[1]; s.disabled=true; s.classList.add(ok?"ok-f":"ko-f"); if(ok) pts++; else corr.push(`${r[0]} → ${it.opts[r[1]]}`); });
+    $("#val").parentNode.remove(); $("#w").remove(); add(it.cat,pts,rows.length);
+    const col=it.cat==="m"?"mots":"meth", nm=it.cat==="m"?"Mots":"Méthode";
+    feedback(pts===rows.length?"good":pts>=rows.length/2?"mid":"bad","",chip(col,`${nm} ${pts}/${rows.length}`),corr.map(c=>"Correction : "+c).concat([it.fb]));
+    save(); nextBtn(S.k+1<SEQ.length?"Appel suivant →":"Voir mon bilan →");
+  };
+}
+function end(){
+  const m=pc(...S.sc.m), v=pc(...S.sc.v), t=pc(...S.sc.t);
+  const all=pc(S.sc.m[0]+S.sc.v[0]+S.sc.t[0], S.sc.m[1]+S.sc.v[1]+S.sc.t[1]);
+  const title=all>=85?"Voix d'or de NOVELYS":all>=70?"Standardiste confirmé(e)":all>=50?"Standardiste en progrès":"Standardiste débutant(e)";
+  const weak=[["les mots",m],["la voix",v],["la méthode",t]].sort((a,b)=>a[1]-b[1])[0][0];
+  app.innerHTML=`<section class="card hero"><span class="badge">${title}</span><h1 style="margin-top:16px">${all} %</h1>
+    <div class="three"><div style="background:var(--mots)"><strong>Les mots : ${m} %</strong></div><div style="background:var(--voix)"><strong>La voix : ${v} %</strong></div><div style="background:var(--meth)"><strong>La méthode : ${t} %</strong></div></div>
+    <p>Ton point à travailler en priorité : <b>${weak}</b>.</p>
+    <table class="rec">${S.recap.map(([w,md])=>`<tr><td>${esc(w)} a raccroché…</td><td>${moodLabel(md)[0]}</td></tr>`).join("")}</table>
+    <div class="actions"><button class="btn ghost" id="again" style="color:#fff;border-color:rgba(255,255,255,.4)">Recommencer</button></div></section>
+    ${all>=70?`<section class="card" style="margin-top:18px;border-left:6px solid var(--ok)"><h2 style="font-size:28px">Mission finale : ton propre appel (dans Word)</h2>
+      <p><b>La situation :</b> Mme Jacobs, de la société Fleurs &amp; Co, appelle pour parler à Mme Vandermeulen, qui n'est pas disponible avant 15 h. Elle rappellera elle-même vers 15 h 30. Son numéro : 0496 15 42 87.</p>
+      <div class="check">${["Écris le script complet de l'appel, réplique par réplique","Les 5 étapes y sont : décrocher, se présenter, identifier, traiter, conclure","Tu demandes d'épeler le nom et tu répètes le numéro par petits groupes","Tu ne donnes pas la raison de l'absence de Mme Vandermeulen","Tu récapitules avant de saluer","En dessous, recrée la fiche message NOVELYS (tableau) et remplis tous ses champs","Relu : zéro faute"].map(x=>`<label><input type="checkbox"> ${x}</label>`).join("")}</div>
+      <p><b>Quand tout est coché, lève la main et montre ton document au professeur.</b></p></section>`
+    :`<section class="card" style="margin-top:18px"><h2 style="font-size:26px">Mission finale verrouillée</h2><p>Atteins au moins 70 % pour la débloquer. Relis ton mémo NOVELYS et recommence !</p></section>`}`;
+  $("#again").onclick=()=>{ S={phase:"play",k:0,s:0,sc:{m:[0,0],v:[0,0],t:[0,0]},moods:{},recap:[]}; save(); render(); };
+}
+function render(){
+  stopTimer();
+  if(S.phase==="play" && S.k>=SEQ.length) S.phase="end";
+  save(); gauges();
+  if(S.phase==="start") start(); else if(S.phase==="end") end();
+  else { SEQ[S.k].kind==="call" ? callStep() : train(); }
+  window.scrollTo(0,0);
+}
+$("#reset").onclick=()=>{ if(!confirm("Effacer la partie en cours ?")) return; S={phase:"start",k:0,s:0,sc:{m:[0,0],v:[0,0],t:[0,0]},moods:{},recap:[]}; save(); render(); };
+if(S.phase==="play"){ gauges(); $("#gauges").hidden=true; start(); } else render();
+</script>
+</body>
+</html>

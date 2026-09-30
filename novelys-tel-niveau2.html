@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contrôle qualité — Novelys, l'appel téléphonique, niveau 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F6; --card:#FFFFFF; --ink:#1A2740; --muted:#56627A; --line:#CBD3E0;
+  --navy:#1F3A63; --navy-ink:#FFFFFF; --orange:#E07B2E; --orange-soft:#FCEBDD;
+  --ok:#237A4B; --ok-bg:#E3F3E8; --mid:#8A6100; --mid-bg:#FFF1CF; --err:#B3261E; --err-bg:#FBE6E4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#10182A; --card:#1A2439; --ink:#E6EBF4; --muted:#9FAAC0; --line:#33415C; --navy:#2A4C80; --orange-soft:#3F2A18; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F; }
+}
+:root[data-theme="dark"]{ --bg:#10182A; --card:#1A2439; --ink:#E6EBF4; --muted:#9FAAC0; --line:#33415C; --navy:#2A4C80; --orange-soft:#3F2A18; --ok:#5CC48A; --ok-bg:#1B3A29; --mid:#E6B94A; --mid-bg:#3D3014; --err:#F08A80; --err-bg:#43221F; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.5}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.12;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+select{font:inherit;color:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card);max-width:100%;width:100%}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+main{max-width:940px;margin:0 auto;padding:22px 18px 40px}
+
+.bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:24px;color:var(--navy);letter-spacing:.02em}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .logo{color:#9DB9E6} }
+.logo::before{content:"";display:inline-block;width:10px;height:10px;background:var(--orange);margin-right:6px;vertical-align:4px}
+.logo small{display:block;font-family:"Atkinson Hyperlegible",sans-serif;font-weight:400;font-size:12px;color:var(--orange);letter-spacing:.08em;text-transform:uppercase}
+.tag{background:var(--navy);color:var(--navy-ink);font-size:14px;font-weight:700;padding:4px 12px;border-radius:20px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px}
+.hero{background:var(--navy);color:var(--navy-ink);border:0}
+.hero h1{font-size:clamp(32px,5.5vw,52px);font-weight:800}
+.hero h1 span{color:var(--orange)}
+.hero p{max-width:64ch;opacity:.95}
+.leo{display:flex;gap:14px;align-items:flex-start;margin:18px 0 0}
+.avatar{flex:none;width:52px;height:52px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px}
+.bubble{background:var(--orange-soft);color:var(--ink);border-radius:4px 14px 14px 14px;padding:12px 16px;max-width:620px}
+.hero .bubble{background:rgba(255,255,255,.12);color:var(--navy-ink)}
+
+.carnet{margin-top:20px}
+.carnet h2{font-size:26px;margin-bottom:10px}
+.mod{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.mod .n{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700}
+.mod.done .n{background:var(--ok);border-color:var(--ok);color:#fff}
+.mod.next .n{background:var(--orange);border-color:var(--orange);color:#fff}
+.mod .t{font-weight:700}
+.mod .d{font-size:15px;color:var(--muted)}
+.mod .s{font-weight:700;white-space:nowrap}
+.stars{color:var(--orange);letter-spacing:.08em}
+
+.mission h2{font-size:30px;margin-bottom:6px}
+.mission .ref{display:inline-block;font-size:14px;color:var(--orange);font-weight:700;margin-bottom:10px}
+.consigne{margin:12px 0 18px;max-width:70ch}
+.scene{background:var(--bg);border-left:5px solid var(--navy);padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:18px}
+.scene p{margin:0 0 6px}
+.row{display:grid;grid-template-columns:1fr minmax(210px,300px);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.row .why{grid-column:1/-1;font-size:15px;color:var(--err);margin-top:-4px}
+.group{margin:18px 0 4px;padding:10px 14px;background:var(--navy);color:var(--navy-ink);border-radius:8px;font-weight:700}
+.q{margin:18px 0 6px;font-weight:700}
+.opt{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;background:var(--card)}
+.opt:hover{border-color:var(--orange)}
+.opt input{margin-top:4px;width:18px;height:18px;flex:none}
+.opt.best{border-color:var(--ok);background:var(--ok-bg)} .opt.bad{border-color:var(--err)}
+.good-sel{border-color:var(--ok)!important} .bad-sel{border-color:var(--err)!important}
+.lines{display:grid;gap:8px}
+.line{display:block;width:100%;text-align:left;border:2px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--card)}
+.line.visitor{border-style:dashed;cursor:default;color:var(--muted);background:transparent}
+.line.didas{font-style:italic}
+.line.on{border-color:var(--orange);background:var(--orange-soft)}
+.line.right{border-color:var(--ok);background:var(--ok-bg)}
+.line.missed{border-color:var(--err);background:var(--err-bg)}
+.line .lw{display:block;font-size:14px;font-style:normal;margin-top:4px}
+.btn{background:var(--orange);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-weight:700;font-size:18px}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.hero .btn.ghost{color:var(--navy-ink);border-color:rgba(255,255,255,.4)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.fb{border-radius:8px;padding:14px 16px;margin-top:18px}
+.fb.good{background:var(--ok-bg)} .fb.mid{background:var(--mid-bg)} .fb.bad{background:var(--err-bg)}
+.fb strong{font-size:20px;display:block;margin-bottom:6px}
+.fb p{margin:6px 0 0}
+.warn{color:var(--err);font-size:15px;margin-top:8px}
+.check label{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.check input{width:20px;height:20px;margin-top:4px;flex:none}
+table.std{border-collapse:collapse;width:100%;max-width:640px;font-size:16px;margin:0 0 8px;background:var(--card)}
+table.std th,table.std td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+table.std th{background:var(--bg);width:34%}
+.avatar{font-size:19px!important}
+footer{max-width:940px;margin:0 auto;padding:0 18px 36px;font-size:15px;color:var(--muted)}
+.linkbtn{background:none;border:0;padding:0;text-decoration:underline;color:var(--muted);font-size:15px}
+@media (max-width:680px){.row{grid-template-columns:1fr}.mod{grid-template-columns:40px 1fr}.mod .s{grid-column:2}}
+</style>
+</head>
+<body>
+<main>
+  <div class="bar"><div class="logo">NOVELYS<small>Solutions &amp; événements d'entreprise</small></div><span class="tag">L'appel téléphonique · Niveau 2</span></div>
+  <div id="app"></div>
+</main>
+<footer>Un autre élève doit commencer ? <button class="linkbtn" id="reset">Tout effacer</button> · <a href="index.html#novelys" style="color:inherit;font-weight:700">← Retour à tous les jeux</a></footer>
+
+<script>
+const KEY="novelys-tel-niveau2";
+/* ---------- Les 8 modules de formation ----------
+   rows : lignes avec liste déroulante {label, opts, a (indice de la bonne réponse), why, group}
+   qs   : questions à choix {q, opts:[[texte, bonne(1/0)]]}
+   lines: script à analyser {who, txt, bad (1 = erreur), why}                                       */
+const MODS=[
+{ t:"L'appel de Kevin", d:"Repérer les erreurs d'un appel", ref:"Support : parties 5, 8 et 12",
+  leo:"Commençons par l'appel de Kevin, hier matin. Il a fait plusieurs erreurs… Retrouve-les toutes.",
+  consigne:"Il y a exactement 5 erreurs dans ce que fait ou dit Kevin. Clique sur chaque ligne fautive (clique encore pour annuler), puis valide. Les répliques de l'appelante ne sont pas cliquables.",
+  lines:[
+   {txt:"(Le téléphone sonne six fois avant que Kevin décroche.)",bad:1,why:"On décroche avant la 3e sonnerie : un délai trop long inquiète l'appelant."},
+   {txt:"Kevin : « Allô ? »",bad:1,why:"On se présente toujours : « NOVELYS bonjour, Kevin à l'appareil. »"},
+   {who:"v",txt:"Appelante : « Bonjour, Martine Lejeune, de la société Optika. Je voudrais parler à Mme Vandermeulen. »"},
+   {txt:"Kevin : « Un instant, je vérifie sa disponibilité. »",bad:0},
+   {txt:"(Kevin cherche dans l'agenda pendant 40 secondes, sans rien dire.)",bad:1,why:"Un silence prolongé peut être pris pour un abandon de l'appel : on l'annonce, et on s'excuse après une longue attente."},
+   {txt:"Kevin : « Mme Vandermeulen n'est pas disponible avant 11 h. Puis-je prendre un message ? »",bad:0},
+   {who:"v",txt:"Appelante : « Oui, qu'elle me rappelle au 0485 17 36 02, s'il vous plaît. »"},
+   {txt:"Kevin : « C'est noté. » (sans répéter le numéro)",bad:1,why:"On répète toujours un numéro par petits groupes pour vérifier qu'il est bien noté."},
+   {txt:"Kevin : « Je transmets votre message à Mme Vandermeulen dès qu'elle sera disponible. »",bad:0},
+   {txt:"(Kevin raccroche avant que Mme Lejeune ait dit au revoir.)",bad:1,why:"On remercie, on salue, et on laisse l'appelant raccrocher le premier."}],
+  fb:"Chaque étape de l'appel compte : décrocher vite, se présenter, annoncer les silences, vérifier les informations, bien conclure." },
+{ t:"L'appel dans l'ordre", d:"Reconstituer un appel avec transfert", ref:"Support : parties 5 et 9",
+  leo:"Les répliques de cet appel d'Inès ont été enregistrées dans le désordre. Tu peux les remettre dans l'ordre ?",
+  consigne:"Indique la place de chaque réplique dans l'appel, de 1 (la première) à 7 (la dernière).",
+  rows:[
+   ["« NOVELYS bonjour, Inès à l'appareil. »",0],
+   ["« Bonjour, Paul Hennart, de la société Batiplus. J'appelle au sujet de notre devis pour la salle de conférence. »",1],
+   ["« Si je comprends bien, c'est au sujet de votre devis. Je vous mets en relation avec le service événementiel, ne quittez pas. »",2],
+   ["(Inès compose le poste 20 : personne ne répond.)",3],
+   ["« Le service événementiel ne répond pas pour l'instant. Souhaitez-vous que je prenne un message, ou préférez-vous rappeler dans quelques minutes ? »",4],
+   ["« Je préfère laisser un message : qu'on me rappelle cet après-midi. »",5],
+   ["« Très bien : le service événementiel vous rappelle cet après-midi au sujet de votre devis. Merci de votre appel, bonne journée. »",6]
+  ].map(([l,a])=>({label:l,opts:["1","2","3","4","5","6","7"],a,keep:1})),
+  fb:"Se présenter, identifier, reformuler, annoncer le transfert. Si le poste ne répond pas, on revient vers l'appelant avec une alternative. Puis on récapitule avant de saluer." },
+{ t:"Les 5 étapes", d:"La structure d'un appel entrant", ref:"Support : partie 5",
+  leo:"J'ai noté ce que Tom a fait pendant un appel. À quelle étape correspond chaque action ?",
+  consigne:"Classe chaque action dans la bonne étape de l'appel entrant.",
+  rows:[
+   ["Tom décroche à la 2e sonnerie, en souriant.",0],["« NOVELYS bonjour, Tom à l'appareil. »",1],
+   ["« Puis-je savoir qui est à l'appareil ? »",2],["« Et à quel sujet appelez-vous ? »",2],
+   ["« Je vous mets en relation avec la comptabilité, ne quittez pas. »",3],["Tom note un message complet sur la fiche NOVELYS.",3],
+   ["« Je récapitule : Mme Fontaine vous rappelle demain matin. »",4],["Tom laisse l'appelant raccrocher le premier.",4]
+  ].map(([l,a])=>({label:l,opts:["1. Décrocher","2. Se présenter","3. Identifier","4. Traiter","5. Conclure"],a,keep:1})),
+  fb:"Décrocher, se présenter (l'entreprise puis le prénom), identifier (nom, société, motif), traiter (répondre, transférer ou prendre un message), conclure (récapituler, remercier, saluer)." },
+{ t:"Reformule comme un pro", d:"Le vocabulaire téléphonique", ref:"Support : partie 4",
+  leo:"Au standard, certaines phrases reviennent souvent… et ne sont pas toujours très professionnelles. Choisis la meilleure version de chacune.",
+  consigne:"Pour chaque phrase entendue au standard, choisis la version professionnelle.",
+  qs:[
+   {q:"« Je vous passe Mme Fontaine. »",opts:[["« Je vous mets en relation avec Mme Fontaine, ne quittez pas. »",1],["« Attendez, je vous la passe. »",0],["« Restez en ligne, c'est Mme Fontaine. »",0]]},
+   {q:"« Attendez. »",opts:[["« Un instant, je vérifie cela pour vous. »",1],["« Attendez deux secondes. »",0],["« Bougez pas. »",0]]},
+   {q:"« Restez en ligne. » (sans demander l'accord)",opts:[["« Puis-je vous demander de patienter quelques instants ? »",1],["« Ne raccrochez surtout pas. »",0],["« Restez en ligne, merci. »",0]]},
+   {q:"(Rien, après une longue attente.)",opts:[["« Je vous prie de m'excuser pour cette attente. »",1],["« Voilà, je suis là. »",0],["« C'était long, hein ? »",0]]},
+   {q:"« C'est comment, votre nom ? »",opts:[["« Pourriez-vous épeler votre nom, s'il vous plaît ? »",1],["« Vous vous appelez comment ? »",0],["« Répétez ? »",0]]},
+   {q:"« Il est malade, il a la grippe. » (à propos d'un collègue absent)",opts:[["« Il n'est pas disponible pour le moment. Puis-je prendre un message ? »",1],["« Il est absent, rappelez la semaine prochaine. »",0],["« Il est malade, mais ce n'est pas grave. »",0]]}],
+  fb:"On préfère des phrases complètes et courtoises, on demande l'accord avant de mettre en attente, et on reste général sur l'absence d'un collègue." },
+{ t:"Les fiches à vérifier", d:"Comparer l'appel et la fiche message", ref:"Support : partie 7",
+  leo:"Voici trois fiches message remplies hier par l'équipe. Chacune a un problème. Compare-les avec ce que l'appelant a dit.",
+  consigne:"Lis ce que l'appelant a dit, puis la fiche. Choisis le problème de chaque fiche.",
+  qs:[
+   {group:"Fiche 1, prise par Tom",html:`<div class="scene"><p><b>L'appelante a dit :</b> « Bonjour, Sophie Marchal, de la société Linéa. Pouvez-vous dire à Mme Fontaine de me rappeler au 0472 58 14 33 ? C'est pour le séminaire du 12. »</p></div>
+     <table class="std"><tr><th>Destiné à</th><td>Nathalie Fontaine</td></tr><tr><th>M./Mme</th><td>Sophie Marchal</td></tr><tr><th>De</th><td>Linéa</td></tr><tr><th>N° de tél.</th><td>0472 58 41 33</td></tr><tr><th>Nature</th><td>Demande qu'on la rappelle</td></tr><tr><th>Message</th><td>Au sujet du séminaire du 12.</td></tr><tr><th>Pris par</th><td>Tom</td></tr></table>`},
+   {q:"Quel est le problème de la fiche 1 ?",opts:[["Le numéro de téléphone est faux : deux chiffres sont inversés.",1],["La société n'est pas indiquée.",0],["La nature de la demande est fausse.",0],["Il n'y a aucun problème.",0]],why:"0472 58 14 33 et pas 58 41 33 : voilà pourquoi on répète toujours un numéro par petits groupes."},
+   {group:"Fiche 2, prise par Inès",html:`<div class="scene"><p><b>L'appelant a dit :</b> « C'est Marc Dewit, des Transports Dewit. Pas besoin de me rappeler : je rappellerai moi-même demain, vers 10 h, au sujet de la livraison. »</p></div>
+     <table class="std"><tr><th>Destiné à</th><td>Isabelle Vandermeulen</td></tr><tr><th>M./Mme</th><td>Marc Dewit</td></tr><tr><th>De</th><td>Transports Dewit</td></tr><tr><th>N° de tél.</th><td>071 33 20 18 (trouvé dans le dossier client)</td></tr><tr><th>Nature</th><td>Demande qu'on le rappelle</td></tr><tr><th>Message</th><td>Au sujet de la livraison.</td></tr><tr><th>Pris par</th><td>Inès</td></tr></table>`},
+   {q:"Quel est le problème de la fiche 2 ?",opts:[["La nature de la demande est fausse : il rappellera lui-même, demain vers 10 h.",1],["Le nom de l'appelant est mal orthographié.",0],["Il ne fallait pas indiquer de numéro.",0],["Il n'y a aucun problème.",0]],why:"Mme Vandermeulen risque de le rappeler pour rien : la case à cocher était « Rappellera », avec l'heure."},
+   {group:"Fiche 3, sans nom",html:`<div class="scene"><p><b>L'appelante a dit :</b> « Ici Claire Mathy, de l'agence Sirius. Je souhaiterais un rendez-vous avec Mme Vandermeulen la semaine prochaine. Rappelez-moi au 0499 12 45 60. »</p></div>
+     <table class="std"><tr><th>Destiné à</th><td>Isabelle Vandermeulen</td></tr><tr><th>M./Mme</th><td>Claire Mathy</td></tr><tr><th>De</th><td>Agence Sirius</td></tr><tr><th>N° de tél.</th><td>0499 12 45 60</td></tr><tr><th>Nature</th><td>Demande qu'on la rappelle</td></tr><tr><th>Message</th><td>Une dame a appelé.</td></tr><tr><th>Pris par</th><td>…</td></tr></table>`},
+   {q:"Quel est le problème de la fiche 3 ?",opts:[["Le message ne dit pas ce qu'elle veut (un rendez-vous la semaine prochaine), et on ne sait pas qui a pris le message.",1],["Le numéro de téléphone est incomplet.",0],["La société est inventée.",0],["Il n'y a aucun problème.",0]],why:"Le message doit être reformulé clairement, et « Pris par » permet de recontacter la personne en cas de question."}],
+  fb:"Un message complet : date et heure, pour qui, de la part de qui et de quelle société, numéro de rappel, nature de la demande, message reformulé, et qui l'a pris." },
+{ t:"Épeler et noter", d:"L'écoute active au téléphone", ref:"Support : partie 8",
+  leo:"Au téléphone, une seule lettre ou un seul chiffre de travers, et le message ne sert plus à rien. Montre-moi que tu notes sans erreur.",
+  consigne:"Écris exactement ce que l'appelant te dicte.",
+  inputs:[
+   {label:"L'appelant épelle son nom : « V comme Victor, A comme Anatole, N comme Nicolas. Espace. H comme Henri, O, U, T comme Thérèse, T, E. »",ans:"van houtte",mode:"name",show:"Van Houtte"},
+   {label:"Il dicte son numéro : « Zéro quatre sept un, trente-deux, quarante-cinq, zéro six. »",ans:"0471324506",mode:"digits",show:"0471 32 45 06"},
+   {label:"Il dicte son adresse e-mail : « j, point, lambrecht, arobase, batiplus, point, b, e. »",ans:"j.lambrecht@batiplus.be",mode:"email",show:"j.lambrecht@batiplus.be"}],
+  qs:[{q:"Et pour vérifier le numéro, que fais-tu ?",opts:[["Je le répète à voix haute, par petits groupes : « 0471 / 32 / 45 / 06, c'est bien cela ? »",1],["Je lui demande de le redire une fois, en entier.",0],["Je le relis dans ma tête.",0]]}],
+  fb:"On épelle avec un alphabet clair (« V comme Victor »), on répète les numéros par petits groupes, et on ne raccroche jamais sans avoir reformulé l'essentiel." },
+{ t:"Transfert, attente, discrétion", d:"Les situations délicates", ref:"Support : parties 3, 9 et 11",
+  leo:"Voici des situations qui ont posé problème au standard ces derniers jours. Que fallait-il faire ?",
+  consigne:"Pour chaque situation, choisis la réaction la plus professionnelle.",
+  qs:[
+   {q:"Tu es en ligne avec un client quand une deuxième ligne sonne.",opts:[["J'informe poliment mon interlocuteur, je le mets en attente avec son accord, puis je gère brièvement le second appel.",1],["J'ignore le second appel jusqu'à la fin du premier.",0],["Je raccroche le premier appel pour prendre le second.",0]]},
+   {q:"Tu veux transférer un appel vers la comptabilité, mais personne ne répond au poste 30.",opts:[["Je reviens vers l'appelant et je lui propose de prendre un message ou de rappeler dans quelques minutes.",1],["Je laisse l'appel sonner au poste 30 : quelqu'un finira par décrocher.",0],["Je lui donne le numéro direct de la comptable pour qu'il rappelle.",0]]},
+   {q:"Un appelant se présente comme « un ami de Mme Vandermeulen » et demande où en est le dossier Optika.",opts:[["Je ne donne aucune information et je propose que la personne compétente le rappelle.",1],["C'est un ami : je lui résume le dossier.",0],["Je lui dis que le dossier est en retard, sans détails.",0]]},
+   {q:"Tu prends un appel confidentiel sur la paie d'un employé, alors que des visiteurs attendent à l'accueil.",opts:[["Je n'utilise pas le haut-parleur et je parle discrètement, ou je propose de rappeler depuis un bureau fermé.",1],["Je mets le haut-parleur pour avoir les mains libres.",0],["Je répète les montants à voix haute pour vérifier.",0]]},
+   {q:"Un appelant demande pourquoi M. Peeters est absent depuis une semaine.",opts:[["« M. Peeters n'est pas disponible pour le moment. Puis-je prendre un message ou vous orienter vers un collègue ? »",1],["« Il est en congé de maladie. »",0],["« Je ne sais pas, il ne nous dit rien. »",0]]},
+   {q:"Juste avant de décrocher, tu remarques que tu es avachi(e) sur ta chaise, les sourcils froncés.",opts:[["Je me redresse et je souris avant de décrocher.",1],["Aucune importance : l'appelant ne me voit pas.",0],["Je décroche d'abord, je me redresserai après.",0]]}],
+  fb:"On demande l'accord avant de mettre en attente ou de transférer, on ne laisse jamais l'appelant sans nouvelles, on vérifie l'identité avant de donner une information, et on reste général sur les absences." },
+{ t:"DESC au téléphone", d:"Désamorcer un appel tendu", ref:"Support : partie 10 et aide-mémoire",
+  leo:"Dernier appel à analyser, et c'est le plus difficile : M. Lambrecht appelait pour la deuxième fois. Aide-moi à préparer la bonne réponse.",
+  consigne:"M. Lambrecht a reçu une facture avec une erreur de 200 €, et personne ne l'a rappelé comme promis. Classe chaque phrase ou attitude : à quelle lettre de DESC correspond-elle ? Certaines sont à éviter.",
+  rows:[
+   {label:"« Vous avez reçu une facture avec une erreur de 200 €, et on ne vous a pas rappelé comme promis. »",a:0},
+   {label:"« Je comprends que ce soit très agaçant de devoir rappeler. »",a:1},
+   {label:"« Je transmets votre dossier en priorité à la comptabilité, avec la correction à faire. »",a:2},
+   {label:"« Vous recevrez une facture corrigée et un appel de la comptabilité avant demain midi. »",a:3},
+   {label:"« Ce n'est pas moi qui ai fait la facture. »",a:4,why:"On ne se justifie jamais au nom de l'entreprise : on reste du côté de la solution."},
+   {label:"(Vingt secondes de silence pendant que tu cherches la facture.)",a:4,why:"On annonce toujours ce qu'on fait : « Je vérifie, un instant s'il vous plaît. »"}
+  ].map(r=>Object.assign(r,{opts:["D : décrire les faits","E : exprimer le ressenti","S : spécifier une solution","C : conséquence positive","À éviter"],keep:1})),
+  qs:[{q:"Il menace de changer de fournisseur et exige de parler à la directrice.",opts:[["Je reste calme et je passe la main : je propose de le mettre en relation avec un responsable, ou de noter un message prioritaire pour Mme Vandermeulen.",1],["Je hausse le ton : il n'a pas à me parler comme ça.",0],["Je raccroche : il est trop désagréable.",0]]}],
+  fb:"Au téléphone, le ton doit compenser l'absence de sourire visible : il reste calme et posé. DESC t'aide à répondre fermement, sans agressivité, et savoir passer la main est un réflexe professionnel." }
+];
+
+let S={done:[],cur:null};
+try{const s=localStorage.getItem(KEY); if(s) S=Object.assign(S,JSON.parse(s));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s), app=$("#app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const stars=p=>p>=9?"★★★":p>=7?"★★☆":p>=5?"★☆☆":"☆☆☆";
+const total=()=>S.done.reduce((a,b)=>a+(b||0),0);
+
+function home(){
+  const next=S.done.length;
+  const finished=next>=MODS.length, pc=Math.round(total()/(MODS.length*10)*100);
+  app.innerHTML=`<section class="card hero">
+    <h1>Contrôle <span>qualité</span></h1>
+    <p>Chez NOVELYS, certains appels du standard sont enregistrés, avec l'accord des appelants, pour améliorer la qualité du service. Mme Fontaine te confie une mission de confiance : réécouter les appels d'hier passés par l'équipe (Kevin, Inès, Tom), repérer ce qui va et ce qui ne va pas, et préparer les corrections.</p>
+    <div class="leo"><div class="avatar">NF</div><div class="bubble">« Merci de m'aider. Prends ton mémo NOVELYS : tu vas en avoir besoin. »</div></div>
+    <p style="margin-top:16px">8 modules, dans l'ordre. Une seule tentative par module, puis la correction s'affiche. Garde ton support et ton mémo à côté de toi : tu peux les consulter.</p></section>
+    <section class="card carnet"><h2>Le dossier qualité</h2>
+    ${MODS.map((m,i)=>`<div class="mod ${i<next?"done":i===next?"next":""}"><div class="n">${i+1}</div>
+      <div><div class="t">${esc(m.t)}</div><div class="d">${esc(m.d)}</div></div>
+      <div class="s">${i<next?`<span class="stars">${stars(S.done[i])}</span> ${String(S.done[i]).replace(".",",")}/10`:""}</div></div>`).join("")}
+    <div class="actions">${finished?`<button class="btn" id="bilan">Voir mon bilan</button>`:`<button class="btn" id="go">${next?"Continuer : module "+(next+1):"Commencer le contrôle"}</button>`}</div>
+    ${finished?`<p>Score total : <b>${pc} %</b></p>`:""}</section>`;
+  if($("#go")) $("#go").onclick=()=>mission(next);
+  if($("#bilan")) $("#bilan").onclick=bilan;
+}
+function mission(i){
+  const m=MODS[i];
+  let html=`<section class="card mission"><span class="ref">Module ${i+1} sur ${MODS.length} · ${esc(m.ref)}</span><h2>${esc(m.t)}</h2>
+    <div class="leo"><div class="avatar">NF</div><div class="bubble">« ${esc(m.leo)} »</div></div>
+    <p class="consigne"><b>${esc(m.consigne)}</b></p>${m.scene?`<div class="scene"><p>${esc(m.scene)}</p></div>`:""}`;
+  const rows=m.rows?(m.rows.some(r=>r.group)?m.rows:shuffle(m.rows)):[];
+  rows.forEach((r,k)=>{
+    if(r.group){ html+=`<div class="group">${esc(r.group)}</div>`; return; }
+    const o=r.keep?r.opts.map((x,j)=>[x,j]):shuffle(r.opts.map((x,j)=>[x,j]));
+    html+=`<div class="row" data-k="${k}"><span>${esc(r.label)}</span><select data-k="${k}"><option value="">— Choisis —</option>${o.map(([x,j])=>`<option value="${j}">${esc(x)}</option>`).join("")}</select></div>`;
+  });
+  const qs=(m.qs||[]).map(q=>Object.assign({},q,{sh:q.opts?shuffle(q.opts):[]}));
+  qs.forEach((q,k)=>{ if(q.group){ html+=`<div class="group">${esc(q.group)}</div>${q.html||""}`; return; } html+=`<p class="q">${esc(q.q)}</p>${q.sh.map((o,j)=>`<label class="opt"><input type="radio" name="q${k}" value="${j}"><span>${esc(o[0])}</span></label>`).join("")}`; });
+  (m.inputs||[]).forEach((f,k)=>{ html+=`<div class="row" style="grid-template-columns:1fr"><span>${esc(f.label)}</span><input type="text" data-in="${k}" autocomplete="off" style="padding:8px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card);font:inherit;color:inherit"></div>`; });
+  if(m.lines) html+=`<div class="lines">${m.lines.map((l,k)=>`<button class="line ${l.who==="v"?"visitor":""} ${l.txt.startsWith("(")?"didas":""}" data-k="${k}" ${l.who==="v"?"disabled":""}>${esc(l.txt)}</button>`).join("")}</div>`;
+  html+=`<p class="warn" id="w"></p><div id="out"></div><div class="actions"><button class="btn" id="val">Valider</button><button class="btn ghost" id="back">Retour au carnet</button></div></section>`;
+  app.innerHTML=html; window.scrollTo(0,0);
+  $("#back").onclick=home;
+  if(m.lines) app.querySelectorAll(".line:not(.visitor)").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
+  $("#val").onclick=()=>{
+    const sels=[...app.querySelectorAll("select")];
+    const ins=[...app.querySelectorAll("[data-in]")];
+    const unanswered=sels.some(s=>s.value==="")||ins.some(x=>!x.value.trim())||qs.some((q,k)=>!q.group&&!app.querySelector(`input[name=q${k}]:checked`));
+    if(unanswered){ $("#w").textContent="Réponds à toutes les questions avant de valider."; return; }
+    let ok=0, n=0, whys=[];
+    sels.forEach(s=>{ const r=rows[s.dataset.k]; n++; s.disabled=true;
+      if(+s.value===r.a){ ok++; s.classList.add("good-sel"); }
+      else { s.classList.add("bad-sel"); s.closest(".row").insertAdjacentHTML("beforeend",`<div class="why">Bonne réponse : ${esc(r.opts[r.a])}${r.why?" · "+esc(r.why):""}</div>`); } });
+    ins.forEach(x=>{ const f=m.inputs[x.dataset.in]; n++; x.disabled=true;
+      const v=x.value; let got;
+      if(f.mode==="digits") got=v.replace(/\D/g,"")===f.ans;
+      else if(f.mode==="email") got=v.replace(/\s/g,"").toLowerCase()===f.ans;
+      else got=v.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim()===f.ans;
+      x.style.borderColor=got?"var(--ok)":"var(--err)"; if(got) ok++;
+      else x.parentNode.insertAdjacentHTML("beforeend",`<div class="why">Réponse attendue : ${esc(f.show)}</div>`); });
+    qs.forEach((q,k)=>{ if(q.group) return; n++; const c=app.querySelector(`input[name=q${k}]:checked`);
+      app.querySelectorAll(`input[name=q${k}]`).forEach((inp,j)=>{ inp.disabled=true; const l=inp.parentNode;
+        if(q.sh[j][1]) l.classList.add("best"); else if(inp===c) l.classList.add("bad"); });
+      if(q.sh[+c.value][1]) ok++; else if(q.why) whys.push(q.why); });
+    let pts;
+    if(m.lines){
+      const bads=m.lines.filter(l=>l.bad).length; let found=0, extra=0;
+      app.querySelectorAll(".line:not(.visitor)").forEach(b=>{ const l=m.lines[b.dataset.k]; b.disabled=true;
+        const on=b.classList.contains("on"); b.classList.remove("on");
+        if(l.bad){ if(on){found++; b.classList.add("right");} else b.classList.add("missed");
+          b.insertAdjacentHTML("beforeend",`<span class="lw">${on?"Bien vu : ":"Erreur oubliée : "}${esc(l.why)}</span>`); }
+        else if(on){ extra++; b.insertAdjacentHTML("beforeend",`<span class="lw">Cette ligne était correcte.</span>`); } });
+      pts=Math.max(0,Math.round((found-extra)/bads*20)/2);
+      whys.unshift(`Tu as trouvé ${found} erreur(s) sur ${bads}${extra?`, et signalé ${extra} ligne(s) correcte(s)`:""}.`);
+    } else pts=Math.round(ok/n*20)/2;
+    S.done[i]=pts; save();
+    $("#val").remove(); $("#w").remove();
+    const cls=pts>=8?"good":pts>=5?"mid":"bad";
+    const react=pts>=8?"« Excellent travail d'analyse, merci ! »":pts>=5?"« C'est un bon début, mais quelques points t'ont échappé. »":"« Relis ton support sur ce point avant d'aller plus loin. »";
+    $("#out").innerHTML=`<div class="fb ${cls}" role="status"><strong>${String(pts).replace(".",",")} / 10 <span class="stars">${stars(pts)}</span></strong>
+      ${!m.lines?`<p>${ok} bonne(s) réponse(s) sur ${n}. Les corrections sont affichées ci-dessus.</p>`:""}
+      ${whys.map(w=>`<p>${esc(w)}</p>`).join("")}<p><b>À retenir :</b> ${esc(m.fb)}</p><p>Mme Fontaine : ${react}</p></div>`;
+    $("#back").textContent = i+1<MODS.length ? "Module suivant →" : "Voir mon bilan →";
+    $("#back").className="btn"; $("#back").onclick = ()=> i+1<MODS.length ? mission(i+1) : bilan();
+  };
+}
+function bilan(){
+  const pc=Math.round(total()/(MODS.length*10)*100);
+  const weak=MODS.map((m,i)=>[m.t,S.done[i]]).filter(x=>x[1]<7).map(x=>x[0]);
+  const title=pc>=85?"Expert(e) qualité":pc>=70?"Contrôleur qualité confirmé(e)":pc>=50?"Contrôleur qualité en progrès":"Contrôleur qualité débutant(e)";
+  app.innerHTML=`<section class="card hero"><span class="tag" style="background:var(--orange)">${title}</span>
+    <h1 style="margin-top:14px">${pc} %</h1>
+    <div class="leo"><div class="avatar">NF</div><div class="bubble">${pc>=70?"« Ton analyse va vraiment aider l'équipe du standard. Merci ! »":"« Merci… mais relis ton support : il y a encore des points à revoir avant de corriger les autres. »"}</div></div>
+    ${weak.length?`<p style="margin-top:16px">À revoir dans ton support : <b>${weak.map(esc).join(", ")}</b>.</p>`:`<p style="margin-top:16px">Aucun module sous les 7/10 : bravo !</p>`}
+    <div class="actions"><button class="btn ghost" id="again">Recommencer le contrôle</button><button class="btn ghost" id="carnet">Voir le carnet</button></div></section>
+    ${pc>=70?`<section class="card" style="margin-top:18px;border-left:6px solid var(--ok)"><h2 style="font-size:28px">Mission finale : le rapport qualité (dans Word)</h2>
+      <p>Mme Fontaine veut un document à remettre à l'équipe du standard.</p>
+      <div class="check">${["Page 1 : une grille d'évaluation d'un appel, sous forme de tableau (au moins 8 critères à cocher « oui / non », classés selon les 5 étapes de l'appel)","Page 2 : l'appel de Kevin (module 1) réécrit sans aucune erreur, réplique par réplique","Dans ce script : la voix et les attitudes indiquées entre parenthèses (sourire, silence annoncé…)","Page 3 : la fiche message NOVELYS de cet appel, recréée et remplie","Titres, mise en page claire, noms des personnages en gras","Relu : zéro faute"].map(x=>`<label><input type="checkbox"> ${x}</label>`).join("")}</div>
+      <p><b>Quand tout est coché, lève la main et montre ton document au professeur.</b></p></section>`
+    :`<section class="card" style="margin-top:18px"><h2 style="font-size:26px">Mission finale verrouillée</h2><p>Atteins au moins 70 % pour la débloquer. Relis les parties du support indiquées, puis recommence le contrôle.</p></section>`}`;
+  window.scrollTo(0,0);
+  $("#again").onclick=()=>{S={done:[],cur:null};save();home();};
+  $("#carnet").onclick=home;
+}
+$("#reset").onclick=()=>{ if(!confirm("Effacer toute la progression ?")) return; S={done:[],cur:null}; save(); home(); };
+home();
+</script>
+</body>
+</html>
