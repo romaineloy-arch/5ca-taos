@@ -32,7 +32,8 @@ const ESPACES = [
                    "integrative"             → espace « Semaines intégratives »
      theme       : pour "novelys" (et "integrative") : le nom du thème,
                    écrit exactement de la même façon pour ses 3 niveaux
-     niveau      : 1, 2 ou 3
+     niveau      : 1, 2 ou 3 (pour une semaine intégrative : 1 à 5, l'ordre des jours)
+     jour        : (semaines intégratives seulement) le jour affiché, par exemple "Lundi"
      duree       : texte libre, par exemple "45 min"
      description : une ou deux phrases pour les élèves
      materiel    : ce qu'il faut préparer ("" si rien)
@@ -273,6 +274,66 @@ const JEUX = [
     description: "Prends tes propres notes pendant une réunion en direct, rédige toi-même le PV complet, puis diffuse-le.",
     materiel: "Dossier théorique et lexique",
     suivi: "novelys-pv-niveau3"
+  },
+  {
+    titre: "La prise de poste",
+    fichier: "integ1-lundi.html",
+    famille: "integrative",
+    theme: "Semaine intégrative 1 · Une semaine aux commandes",
+    niveau: 1,
+    jour: "Lundi",
+    duree: "2 h",
+    description: "Organise ta semaine, accueille les premiers visiteurs, réponds au téléphone, trie le courrier, contrôle une facture et crée ton registre dans Excel.",
+    materiel: "Excel, Gmail",
+    suivi: "novelys-integ1-lundi"
+  },
+  {
+    titre: "Téléphone et messagerie",
+    fichier: "integ1-mardi.html",
+    famille: "integrative",
+    theme: "Semaine intégrative 1 · Une semaine aux commandes",
+    niveau: 2,
+    jour: "Mardi",
+    duree: "2 h",
+    description: "Répondeur, boîte mail, client mécontent, fournisseur en retard, colis abîmé… et une lettre officielle à rédiger dans Word.",
+    materiel: "Gmail, Word, Excel",
+    suivi: "novelys-integ1-mardi"
+  },
+  {
+    titre: "L'accueil sous pression",
+    fichier: "integ1-mercredi.html",
+    famille: "integrative",
+    theme: "Semaine intégrative 1 · Une semaine aux commandes",
+    niveau: 3,
+    jour: "Mercredi",
+    duree: "1 h 30",
+    description: "Un comptoir qui ne désemplit pas, des questions indiscrètes, le courrier sortant et la convocation de la réunion de demain.",
+    materiel: "Gmail, Excel",
+    suivi: "novelys-integ1-mercredi"
+  },
+  {
+    titre: "Le jour de la réunion",
+    fichier: "integ1-jeudi.html",
+    famille: "integrative",
+    theme: "Semaine intégrative 1 · Une semaine aux commandes",
+    niveau: 4,
+    jour: "Jeudi",
+    duree: "1 h 30",
+    description: "Contrôle une livraison, prends tes notes pendant la réunion du Forum en direct, puis rédige le procès-verbal dans Word.",
+    materiel: "Word, lexique des abréviations",
+    suivi: "novelys-integ1-jeudi"
+  },
+  {
+    titre: "La journée de tous les dangers",
+    fichier: "integ1-vendredi.html",
+    famille: "integrative",
+    theme: "Semaine intégrative 1 · Une semaine aux commandes",
+    niveau: 5,
+    jour: "Vendredi",
+    duree: "1 h 30",
+    description: "Diffuse le PV, contrôle une facture, déjoue une arnaque, fais le bilan de la semaine et prépare la passation.",
+    materiel: "Gmail, Excel",
+    suivi: "novelys-integ1-vendredi"
   }
 ];
 /* ================== FIN DE LA PARTIE À MODIFIER ================== */
@@ -393,7 +454,7 @@ function carte(j){
   const st=statut(j.suivi), fam=j.famille||"escape";
   const kick=fam==="escape"?"Escape game":fam==="simulation"?"Simulation":fam==="novelys"?"NOVELYS":"Semaine intégrative";
   return `<a class="game ${fam}" href="${encodeURI(j.fichier)}">
-      <span class="kicker">${kick} · Niveau ${esc(j.niveau)}</span>
+      <span class="kicker">${kick} · ${j.jour?esc(j.jour):"Niveau "+esc(j.niveau)}</span>
       <h4>${esc(j.titre)}</h4>
       <p>${esc(j.description)}</p>
       <div class="meta"><span>${esc(j.duree)}</span>${j.materiel?`<span>${esc(j.materiel)}</span>`:""}</div>
