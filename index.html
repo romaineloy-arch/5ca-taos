@@ -111,6 +111,26 @@ const JEUX = [
     suivi: "escape-secretariat-v4"
   },
   {
+    titre: "La fuite de la nuit",
+    fichier: "escape-fuite-niveau4.html",
+    famille: "escape",
+    niveau: 4,
+    duree: "1 h 30 à 1 h 45",
+    description: "Une fuite d'eau a tout inondé et l'auditeur arrive à 16 h ! Deux chapitres, dix pistes : ouvre l'armoire, puis le coffre.",
+    materiel: "Brouillon et calculatrice",
+    suivi: "escape-lambert-n4-fuite"
+  },
+  {
+    titre: "Les clés du stand 97",
+    fichier: "escape-cles-niveau4.html",
+    famille: "escape",
+    niveau: 4,
+    duree: "1 h 30",
+    description: "Les clés de la camionnette ont disparu la veille du salon. Résous huit pistes, rassemble les indices et démasque le coupable.",
+    materiel: "Brouillon et calculatrice",
+    suivi: "escape-lambert-n4-cles"
+  },
+  {
     titre: "Face à face",
     fichier: "novelys-s5-niveau1.html",
     famille: "novelys",
@@ -445,7 +465,7 @@ function statut(cle){
   try{
     const raw=localStorage.getItem(cle); if(!raw) return "";
     const d=JSON.parse(raw);
-    if(d.open || (d.best && d.best>0) || d.phase==="end" || (Array.isArray(d.done) && d.done.length>=8)) return "Terminé sur cet ordinateur";
+    if(d.open || d.open2 || d.solved || (d.best && d.best>0) || d.phase==="end" || (Array.isArray(d.done) && d.done.length>=8)) return "Terminé sur cet ordinateur";
     if((d.done && Object.keys(d.done).length) || d.phase==="play") return "Commencé sur cet ordinateur";
   }catch(e){}
   return "";
