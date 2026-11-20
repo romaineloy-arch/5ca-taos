@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Codes professeur — NOVELYS</title>
+<style>
+:root{--bg:#EEF1F6;--card:#fff;--ink:#16233A;--muted:#56627A;--line:#CBD3E0;--navy:#1F3A63;--orange:#E07B2E;--ok:#237A4B;--okbg:#E3F3E8;--err:#B3261E;--errbg:#FBE6E4;--soft:#FFF4E6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10182A;--card:#1A2439;--ink:#E6EBF4;--muted:#9FAAC0;--line:#33415C;--navy:#9DB9E6;--okbg:#1B3A29;--ok:#5CC48A;--errbg:#43221F;--err:#F08A80;--soft:#3A2A18}}
+:root[data-theme="dark"]{--bg:#10182A;--card:#1A2439;--ink:#E6EBF4;--muted:#9FAAC0;--line:#33415C;--navy:#9DB9E6;--okbg:#1B3A29;--ok:#5CC48A;--errbg:#43221F;--err:#F08A80;--soft:#3A2A18}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:28px 16px 48px}
+.kick{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font-size:34px;margin:4px 0 18px;color:var(--navy)}
+h2{font-size:22px;margin:0 0 4px;color:var(--navy)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-top:18px}
+.card p{margin:0 0 12px;color:var(--muted)}
+label{display:block;font-weight:700;margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+@media (max-width:620px){.row{grid-template-columns:1fr}}
+button{margin-top:16px;background:var(--orange);color:#fff;border:0;border-radius:8px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer}
+button.ghost{background:transparent;color:var(--muted);border:2px solid var(--line);padding:8px 14px;font-size:15px}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:40px;font-weight:800;letter-spacing:.14em;text-align:center;background:var(--soft);border:3px dashed var(--orange);border-radius:10px;padding:14px;margin-top:16px;user-select:all}
+.res{margin-top:16px;border-radius:8px;padding:14px 16px} .res.ok{background:var(--okbg)} .res.ko{background:var(--errbg);color:var(--err);font-weight:700}
+.res big{display:block;font-size:30px;font-weight:800;color:var(--ok)}
+.hint{font-size:14px;color:var(--muted);margin-top:8px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kick">Secrétariat · 5e collaborateur administratif</p>
+  <h1>Codes professeur</h1>
+
+  <section class="card" id="gate">
+    <h2>Accès réservé</h2>
+    <p>Entre ton mot de passe pour générer les codes des points de contrôle et vérifier les codes de réussite.</p>
+    <label for="pw">Mot de passe</label><input type="password" id="pw" autocomplete="current-password">
+    <button id="enter">Entrer</button>
+    <div class="res ko" id="pwerr" hidden>Mot de passe incorrect.</div>
+  </section>
+
+  <div id="tools" hidden>
+    <section class="card">
+      <h2>Code d'un point de contrôle</h2>
+      <p>Un élève est bloqué sur un écran « Point de contrôle ». Vérifie son bilan, puis génère son code.</p>
+      <div class="row">
+        <div><label for="g">Jeu</label><select id="g"></select></div>
+        <div><label for="n">Niveau</label><select id="n"><option>1</option><option>2</option><option>3</option></select></div>
+        <div><label for="cp">Point de contrôle</label><select id="cp"><option value="1">1 (mi-parcours)</option><option value="2">2 (fin)</option></select></div>
+      </div>
+      <label for="pr">Prénom de l'élève (tel qu'il est affiché sur son écran)</label><input id="pr" autocomplete="off">
+      <button id="gen">Donner le code</button>
+      <div class="code" id="out" hidden></div>
+      <p class="hint">Les accents, les majuscules et les espaces ne comptent pas : « Léa » et « lea » donnent le même code.</p>
+    </section>
+
+    <section class="card">
+      <h2>Vérifier un code de réussite</h2>
+      <p>L'élève a recopié son code de réussite sur sa feuille. Tape son prénom et son code : la page retrouve le jeu, le niveau et le score réel.</p>
+      <label for="vp">Prénom de l'élève</label><input id="vp" autocomplete="off">
+      <label for="vc">Code de réussite</label><input id="vc" autocomplete="off" placeholder="ex. Q4-K7P2Z" style="text-transform:uppercase;letter-spacing:.1em">
+      <button id="ver">Vérifier</button>
+      <div id="vout"></div>
+    </section>
+    <button class="ghost" id="lock">Verrouiller la page</button>
+  </div>
+</div>
+<script>(function(){var k="b31fcf7dba4b2280186eee1f",d=atob("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"),b=new Uint8Array(d.length);for(var i=0;i<d.length;i++)b[i]=d.charCodeAt(i)^k.charCodeAt(i%k.length);(new Function(new TextDecoder().decode(b)))();})();</script>
+</body>
+</html>
