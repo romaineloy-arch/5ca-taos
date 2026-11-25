@@ -10,13 +10,14 @@
 
 <script>
 /* =====================================================================
-   1) LES TROIS ESPACES DE LA PAGE D'ACCUEIL
+   1) LES QUATRE ESPACES DE LA PAGE D'ACCUEIL
    Tu peux changer les titres et les sous-titres ici.
    ===================================================================== */
 const ESPACES = [
   { id: "lambert",      titre: "L'agence Lambert",       sous_titre: "Escape games et simulations de secrétariat" },
   { id: "novelys",      titre: "Projet NOVELYS",         sous_titre: "Un thème, trois niveaux" },
-  { id: "integratives", titre: "Semaines intégratives",  sous_titre: "Des défis qui mélangent tout ce que tu as appris" }
+  { id: "integratives", titre: "Semaines intégratives",  sous_titre: "Des défis qui mélangent tout ce que tu as appris" },
+  { id: "experts",      titre: "Le coin des experts",    sous_titre: "Des escape games de logique, pour ceux qui ont déjà tout terminé" }
 ];
 
 /* =====================================================================
@@ -30,6 +31,7 @@ const ESPACES = [
      famille     : "escape" ou "simulation"  → espace « L'agence Lambert »
                    "novelys"                 → espace « Projet NOVELYS »
                    "integrative"             → espace « Semaines intégratives »
+                   "expert"                  → espace « Le coin des experts »
      theme       : pour "novelys" (et "integrative") : le nom du thème,
                    écrit exactement de la même façon pour ses 3 niveaux
      niveau      : 1, 2 ou 3 (pour une semaine intégrative : 1 à 5, l'ordre des jours)
@@ -354,6 +356,17 @@ const JEUX = [
     description: "Diffuse le PV, contrôle une facture, déjoue une arnaque, fais le bilan de la semaine et prépare la passation.",
     materiel: "Gmail, Excel",
     suivi: "novelys-integ1-vendredi"
+  },
+  {
+    titre: "Le virement de 17 h 45",
+    fichier: "expert-virement.html",
+    famille: "expert",
+    theme: "Enquêtes chez NOVELYS",
+    niveau: 1,
+    duree: "1 h 30 à 2 h",
+    description: "18 500 € viennent de partir vers un compte inconnu, depuis un bureau vide. Fouille cinq pièces, croise registres, emails, courrier et PV, démasque le coupable et fais bloquer le virement avant 18 h 30.",
+    materiel: "Calculatrice",
+    suivi: "expert-virement-1745"
   }
 ];
 /* ================== FIN DE LA PARTIE À MODIFIER ================== */
@@ -385,7 +398,8 @@ header h1{font-family:"Space Grotesk",system-ui,sans-serif;font-size:clamp(32px,
 header p{margin:10px 0 0;max-width:62ch}
 
 /* Les trois grands onglets */
-.spaces{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.spaces{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+@media (max-width:1180px){.spaces{grid-template-columns:repeat(2,1fr)}}
 .space{position:relative;display:flex;flex-direction:column;justify-content:space-between;text-align:left;border:0;border-radius:14px;min-height:250px;padding:26px 24px;transition:transform .15s,box-shadow .15s;box-shadow:0 12px 24px -16px rgba(0,0,0,.5)}
 .space:hover{transform:translateY(-5px)}
 .space h2{font-size:30px;margin:6px 0 8px}
@@ -401,6 +415,9 @@ header p{margin:10px 0 0;max-width:62ch}
 .sp-integratives{background:var(--teal);color:#fff}
 .sp-integratives h2{font-family:"Space Grotesk",system-ui,sans-serif}
 .kick{font-size:14px;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.sp-experts{background:#1B1F27;color:#fff;border-top:8px solid #E0B44A}
+.sp-experts h2{font-family:"Space Grotesk",system-ui,sans-serif}
+.sp-experts .kick{color:#F3D27A}
 .soon{display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-size:13px;font-weight:700}
 
 /* Barre compacte quand on est dans un espace */
@@ -436,6 +453,10 @@ section.zone h2.title{font-family:"Space Grotesk",system-ui,sans-serif;font-size
 .novelys .status{background:var(--orange);color:#fff}
 .integrative{background:var(--teal);color:#fff;border-radius:6px}
 .integrative .status{background:#fff;color:var(--teal)}
+.expert{background:#1B1F27;color:#ECE7DA;border-radius:6px;border-top:6px solid #E0B44A}
+.expert h4{font-family:"Space Grotesk",system-ui,sans-serif;color:#fff}
+.expert .kicker{color:#F3D27A}
+.expert .status{background:#E0B44A;color:#1B1F27}
 .kicker{font-size:14px;letter-spacing:.06em;opacity:.85}
 .theme{font-family:"Space Grotesk",system-ui,sans-serif;font-size:22px;margin:32px 0 0;padding-left:12px;border-left:5px solid var(--orange)}
 .empty{background:var(--teal-soft);border-radius:12px;padding:28px;margin-top:20px;max-width:640px}
@@ -459,12 +480,13 @@ section.zone h2.title{font-family:"Space Grotesk",system-ui,sans-serif;font-size
 
 <script>
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const espaceDe=j=>j.famille==="novelys"?"novelys":j.famille==="integrative"?"integratives":"lambert";
+const espaceDe=j=>j.famille==="novelys"?"novelys":j.famille==="integrative"?"integratives":j.famille==="expert"?"experts":"lambert";
 function statut(cle){
   if(!cle) return "";
   try{
     const raw=localStorage.getItem(cle); if(!raw) return "";
     const d=JSON.parse(raw);
+    if("jokers" in d && "final" in d) return d.final?"Terminé sur cet ordinateur":(Object.keys(d.solved||{}).length?"Commencé sur cet ordinateur":"");
     if(d.open || d.open2 || d.solved || (d.best && d.best>0) || d.phase==="end" || (Array.isArray(d.done) && d.done.length>=8)) return "Terminé sur cet ordinateur";
     if((d.done && Object.keys(d.done).length) || d.phase==="play") return "Commencé sur cet ordinateur";
   }catch(e){}
@@ -472,9 +494,9 @@ function statut(cle){
 }
 function carte(j){
   const st=statut(j.suivi), fam=j.famille||"escape";
-  const kick=fam==="escape"?"Escape game":fam==="simulation"?"Simulation":fam==="novelys"?"NOVELYS":"Semaine intégrative";
+  const kick=fam==="escape"?"Escape game":fam==="simulation"?"Simulation":fam==="novelys"?"NOVELYS":fam==="expert"?"Expert":"Semaine intégrative";
   return `<a class="game ${fam}" href="${encodeURI(j.fichier)}">
-      <span class="kicker">${kick} · ${j.jour?esc(j.jour):"Niveau "+esc(j.niveau)}</span>
+      <span class="kicker">${kick} · ${j.jour?esc(j.jour):fam==="expert"?"Enquête n° "+esc(j.niveau):"Niveau "+esc(j.niveau)}</span>
       <h4>${esc(j.titre)}</h4>
       <p>${esc(j.description)}</p>
       <div class="meta"><span>${esc(j.duree)}</span>${j.materiel?`<span>${esc(j.materiel)}</span>`:""}</div>
@@ -505,7 +527,7 @@ function espace(id){
   if(id==="lambert"){
     const bloc=(fam,titre,sous)=>{ const l=jeux.filter(j=>(j.famille||"escape")===fam).sort(parNiveau); return l.length?`<div class="sechead"><h3>${titre}</h3><p>${sous}</p></div><div class="grid">${l.map(carte).join("")}</div>`:""; };
     corps=bloc("escape","Escape games","Résous les tâches, gagne des lettres, trouve le code.")+bloc("simulation","Simulations","Une journée de travail : chaque décision compte, pas de retour en arrière.");
-  } else corps=jeux.length?parTheme(jeux):`<div class="empty"><h3>Bientôt disponible</h3><p>Les jeux des semaines intégratives arriveront ici au fil de l'année. En attendant, essaie les jeux des autres espaces !</p></div>`;
+  } else corps=jeux.length?parTheme(jeux):`<div class="empty"><h3>Bientôt disponible</h3><p>${id==="experts"?"Les enquêtes pour experts arriveront ici au fil de l'année.":"Les jeux des semaines intégratives arriveront ici au fil de l'année."} En attendant, essaie les jeux des autres espaces !</p></div>`;
   document.getElementById("app").innerHTML=`<nav class="tabbar" aria-label="Espaces"><button class="home" id="home">← Accueil</button>
       ${ESPACES.map(x=>`<button class="tab" data-go="${x.id}" aria-current="${x.id===id}">${esc(x.titre)}</button>`).join("")}</nav>
     <section class="zone"><h2 class="title">${esc(e.titre)}</h2><p style="color:var(--muted);margin:4px 0 0">${esc(e.sous_titre)}</p>${corps}</section>`;
